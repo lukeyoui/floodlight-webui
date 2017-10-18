@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- MetisMenu CSS -->
+    <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet"/>
+
+    <!-- DataTables CSS -->
+    <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
+          rel="stylesheet"/>
+
+    <!-- DataTables Responsive CSS -->
+    <link href="../bower_components/datatables-responsive/css/dataTables.responsive.css" rel="stylesheet"/>
+
+    <!-- Custom CSS -->
+    <link href="../dist/css/sb-admin-2.css" rel="stylesheet"/>
+
+    <!-- Custom Fonts -->
+    <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+
+    <link href="../bower_components/visjs/vis.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" src="../bower_components/qtip/jquery.qtip.css"></link>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        #cy {
+            flex: 1;
+            height: calc(100vh - 51px);
+        }
+        /*#page-wrapper {*/
+            /*flex: 1;*/
+        /*}*/
+        body, html, #wrapper {
+            height: auto;
+        }
+        #page-wrapper {
+            /*display: flex;*/
+            height: auto;
+        }
+        /*body, #page-wrapper {*/
+            /*display: flex;*/
+        /*}*/
+        /*.row {*/
+            /*display: flex;*/
+            /*flex: 1;*/
+        /*}*/
+    </style>
+</head>
+
+<body>
+
+         <!--/.row-->
+        <!--<div class="row">-->
+            <div id="cy"></div>
+        <!--</div>-->
+         <!--/.row-->
+    <!-- /#page-wrapper -->
+
+<!-- jQuery -->
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!-- Metis Menu Plugin JavaScript -->
+<script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
+
+<!-- DataTables JavaScript -->
+<script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
+<script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="../dist/js/sb-admin-2.js"></script>
+
+<!-- Page-Level Demo Scripts - Tables - Use for reference -->
+
+<script src="../js/querystringparser.js"></script>
+
+<script src="../js/jquery.cookie.js"></script>
+
+<!-- Custom scripts to load in HTML -->
+<script src="../js/navbar.js"></script>
+<script src="../bower_components/cytoscape/dist/cytoscape.js"></script>
+<script src="../bower_components/qtip2/jquery.qtip.min.js"></script>
+<link href="../bower_components/qtip2/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+<script src="../bower_components/cytoscape-qtip/cytoscape-qtip.js"></script>
+<script>
+    $(function(){
+        $("#login-modal-include").load("loginmodal.html");
+    });
+</script>
+
+<script type="text/javascript">
+    /*
+     * These cookies are set on the login page at login.html.
+     * They are simply the IP address of your controller and the REST api port.
+     * */
+    var ipaddress = $.cookie('cip');
+    if (ipaddress == null || ipaddress == "") window.location.href = "login.html";
+    var restport = $.cookie('cport');
+    if (restport == null || restport == "") window.location.href = "login.html";
+
+
+    var nodes = [];
+    var edges = [];
+
+    /*
+    * This function draws the network and assigns actions to it as well.
+    **/
+    function draw() {
+        var cyto = cytoscape({
+            container: document.getElementById("cy"),
+            elements: {
+                nodes: [
+                    {data: {id: 's1', name: "\uf074\n S1", shape: "roundrectangle"}},
+                    {data: {id: 's2', name: "\uf074\n S2", shape: "roundrectangle"}},
+                    {data: {id: 's3', name: "\uf074\n S3", shape: "roundrectangle"}},
+                    {data: {id: 's4', name: "\uf074\n S4", shape: "roundrectangle"}},
+                    {data: {id: 'h1', name: "\uf108\n H1", shape: "ellipse"}},
+                    {data: {id: 'h2', name: "\uf108\n H2", shape: "ellipse"}},
+                    {data: {id: 'h3', name: "\uf108\n H3", shape: "ellipse"}},
+                    {data: {id: 'h4', name: "\uf108\n H4", shape: "ellipse"}}
+                ],
+                edges: [
+                    {data: {id: "s1s2", weight: 10, source: "s1", target: "s2"}},
+                    {data: {id: "s1s3", weight: 10, source: "s1", target: "s3"}},
+                    {data: {id: "s1s4", weight: 15, source: "s1", target: "s4"}},
+                    {data: {id: "s2s3", weight: 5, source: "s2", target: "s3"}},
+                    {data: {id: "s3s4", weight: 8, source: "s3", target: "s4"}},
+                    {data: {id: "h1s1", weight: 5, source: "h1", target: "s1"}},
+                    {data: {id: "h2s2", weight: 5, source: "h2", target: "s2"}},
+                    {data: {id: "h3s3", weight: 5, source: "h3", target: "s3"}},
+                    {data: {id: "h4s4", weight: 5, source: "h4", target: "s4"}}
+                ]
+            },
+            style: cytoscape.stylesheet()
+                .selector('node')
+                .css({
+                    'shape': function(ele) {
+                      return (ele.data('shape'))
+                    },
+                    'content': function(ele) {
+                        return (ele.data('name'))
+                    },
+                    'background-color': function(ele) {
+                        if (ele.data('shape') == "roundrectangle") {
+                            return "#D24040";
+                        } else {
+                            return "#5267E4";
+                        }
+                    },
+                    'font-family': 'FontAwesome',
+                    'font-style': 'normal',
+                    'width': 'label',
+                    'height': 'label',
+                    'padding-left': '10px',
+                    'padding-right': '10px',
+                    'padding-top': '10px',
+                    'padding-bottom': '10px',
+                    'text-valign': 'center',
+                    'text-halign': 'center'
+                })
+                .selector('edge')
+                .css({
+                    'width': function(ele) {
+                        return (ele.data('weight'));
+                    },
+                    'line-color': function(ele) {
+                        if (ele.data('weight') > 10) {
+                            return "#E40104";
+                        } else if (ele.data('weight') <= 10 && ele.data('weight') > 5) {
+                            return "#FEA94E";
+                        } else {
+                            return "#01D51A";
+                        }
+                    },
+                    'target-arrow-shape': 'circle',
+                    'opacity': 0.5
+                 }),
+            layout: {
+                name: 'cose',
+                gravity: -10,
+                initialTemp: 100000,
+                nodeRepulsion: function(node){return 100000;},
+                fit: true
+            },
+            minZoom: 0.5,
+            maxZoom: 10,
+            wheelSensitivity: 0.2,
+            boxSelectionEnabled: true,
+            ready: function() {}
+        })
+
+        cyto.$('#s1s2').qtip({
+          content: function (event, api) {
+              // Make a request to the external HTML file
+              $.ajax({
+                  url: 'linkpopup.html',
+                  dataType: "html"
+              })
+              .then(function (html) {
+                  // Grab the element from the retrieved URL using above selector
+                  var element = jQuery.parseHTML(html);
+                  api.set('content.text', element);
+              });
+          },
+            position: {
+                my: 'bottom left',
+                at: 'top center',
+                target: cyto.$('#s1s2')
+            },
+            style: {
+                classes: 'qtip-bootstrap',
+                tip: {
+                    width: 16,
+                    height: 8,
+                    border: 1
+                }
+           }
+      });
+
+    }
+
+
+    draw();
+
+
+</script>
+
+</body>
+
+</html>
