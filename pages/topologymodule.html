@@ -13,9 +13,6 @@
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
-    <!-- MetisMenu CSS -->
-    <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet"/>
-
     <!-- DataTables CSS -->
     <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
           rel="stylesheet"/>
@@ -45,34 +42,19 @@
             flex: 1;
             height: calc(100vh - 51px);
         }
-        /*#page-wrapper {*/
-            /*flex: 1;*/
-        /*}*/
         body, html, #wrapper {
             height: auto;
         }
         #page-wrapper {
-            /*display: flex;*/
             height: auto;
         }
-        /*body, #page-wrapper {*/
-            /*display: flex;*/
-        /*}*/
-        /*.row {*/
-            /*display: flex;*/
-            /*flex: 1;*/
-        /*}*/
+        .qtip.my-qtip {
+            max-width: none;
+        }
     </style>
 </head>
-
 <body>
-
-         <!--/.row-->
-        <!--<div class="row">-->
-            <div id="cy"></div>
-        <!--</div>-->
-         <!--/.row-->
-    <!-- /#page-wrapper -->
+    <div id="cy"></div>
 
 <!-- jQuery -->
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
@@ -91,9 +73,7 @@
 <script src="../dist/js/sb-admin-2.js"></script>
 
 <!-- Page-Level Demo Scripts - Tables - Use for reference -->
-
 <script src="../js/querystringparser.js"></script>
-
 <script src="../js/jquery.cookie.js"></script>
 
 <!-- Custom scripts to load in HTML -->
@@ -102,11 +82,6 @@
 <script src="../bower_components/qtip2/jquery.qtip.min.js"></script>
 <link href="../bower_components/qtip2/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
 <script src="../bower_components/cytoscape-qtip/cytoscape-qtip.js"></script>
-<script>
-    $(function(){
-        $("#login-modal-include").load("loginmodal.html");
-    });
-</script>
 
 <script type="text/javascript">
     /*
@@ -118,133 +93,441 @@
     var restport = $.cookie('cport');
     if (restport == null || restport == "") window.location.href = "login.html";
 
+    /* Declare some constant values for the types of nodes we can add */
+    var NODE_SWITCH = "SWITCH";
+    var NODE_HOST = "HOST";
 
-    var nodes = [];
-    var edges = [];
+    /* Define some constants for background colour */
+    var SWITCH_BG = "#CE4345";
+    var HOST_BG = "#589DFE";
+
+    var cyto = null;
+
+    /* Cache for bandwidth values */
+    var bandwidth = [];
 
     /*
     * This function draws the network and assigns actions to it as well.
     **/
+    /* TODO: I would like to delete this method entirely maybe even add
+             the loading into the ready function */
     function draw() {
-        var cyto = cytoscape({
+        cyto = cytoscape({
             container: document.getElementById("cy"),
             elements: {
-                nodes: [
-                    {data: {id: 's1', name: "\uf074\n S1", shape: "roundrectangle"}},
-                    {data: {id: 's2', name: "\uf074\n S2", shape: "roundrectangle"}},
-                    {data: {id: 's3', name: "\uf074\n S3", shape: "roundrectangle"}},
-                    {data: {id: 's4', name: "\uf074\n S4", shape: "roundrectangle"}},
-                    {data: {id: 'h1', name: "\uf108\n H1", shape: "ellipse"}},
-                    {data: {id: 'h2', name: "\uf108\n H2", shape: "ellipse"}},
-                    {data: {id: 'h3', name: "\uf108\n H3", shape: "ellipse"}},
-                    {data: {id: 'h4', name: "\uf108\n H4", shape: "ellipse"}}
-                ],
-                edges: [
-                    {data: {id: "s1s2", weight: 10, source: "s1", target: "s2"}},
-                    {data: {id: "s1s3", weight: 10, source: "s1", target: "s3"}},
-                    {data: {id: "s1s4", weight: 15, source: "s1", target: "s4"}},
-                    {data: {id: "s2s3", weight: 5, source: "s2", target: "s3"}},
-                    {data: {id: "s3s4", weight: 8, source: "s3", target: "s4"}},
-                    {data: {id: "h1s1", weight: 5, source: "h1", target: "s1"}},
-                    {data: {id: "h2s2", weight: 5, source: "h2", target: "s2"}},
-                    {data: {id: "h3s3", weight: 5, source: "h3", target: "s3"}},
-                    {data: {id: "h4s4", weight: 5, source: "h4", target: "s4"}}
-                ]
+                nodes: [],
+                edges: []
             },
+            /* Set the CSS styles for the graph */
             style: cytoscape.stylesheet()
-                .selector('node')
-                .css({
+                /* Node CSS */
+                .selector('node').css({
+                    /* Select the shape of the node based off the type */
                     'shape': function(ele) {
-                      return (ele.data('shape'))
-                    },
-                    'content': function(ele) {
-                        return (ele.data('name'))
-                    },
-                    'background-color': function(ele) {
-                        if (ele.data('shape') == "roundrectangle") {
-                            return "#D24040";
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return "roundrectangle";
                         } else {
-                            return "#5267E4";
+                            return "ellipse";
                         }
                     },
+
+                    /* Set the background colour based on the type */
+                    'background-color': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return SWITCH_BG;
+                        } else {
+                            return HOST_BG;
+                        }
+                    },
+
+                    /* Set the background image using rendered FA icons */
+                    'background-image': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return ("../bower_components/Font-Awesome-SVG-PNG/black/png/128/random.png");
+                        } else {
+                            return ("../bower_components/Font-Awesome-SVG-PNG/black/png/128/desktop.png");
+                        }
+                    },
+
+                    /* Need to scale the background image for hosts more
+                     * than the one for switches because of the shape
+                     */
+                    'background-width': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return '80%';
+                        } else {
+                            return '70%';
+                        }
+                    },
+
+
+                    /* Same for the vertical position */
+                    'background-position-y': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return '50%';
+                        } else {
+                            return '60%';
+                        }
+                    },
+
+                    /* Same for the height */
+                    'background-height': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return '80%';
+                        } else {
+                            return '70%';
+                        }
+                    },
+
+                    /* Change border color by background color */
+                    'border-color': function(ele) {
+                        if (ele.data('type') == NODE_SWITCH) {
+                            return '#510001';
+                        } else {
+                            return '#08264B';
+                        }
+                    },
+                    'border-width': 5,
+                    'border-opacity': 0.6,
                     'font-family': 'FontAwesome',
                     'font-style': 'normal',
-                    'width': 'label',
-                    'height': 'label',
-                    'padding-left': '10px',
-                    'padding-right': '10px',
-                    'padding-top': '10px',
-                    'padding-bottom': '10px',
-                    'text-valign': 'center',
-                    'text-halign': 'center'
+                    'font-size': '20',
+                    'text-valign': 'bottom',
+                    'text-wrap': 'wrap',
+                    'height': 64,
+                    'width': 64
                 })
-                .selector('edge')
-                .css({
+                .selector('edge').css({
                     'width': function(ele) {
                         return (ele.data('weight'));
                     },
-                    'line-color': function(ele) {
-                        if (ele.data('weight') > 10) {
-                            return "#E40104";
-                        } else if (ele.data('weight') <= 10 && ele.data('weight') > 5) {
-                            return "#FEA94E";
-                        } else {
-                            return "#01D51A";
-                        }
-                    },
-                    'target-arrow-shape': 'circle',
-                    'opacity': 0.5
+                    /* TODO: Need to find a way to make this include a range
+                     *       with green -> yellow because going green -> red
+                     *       is real ugly.
+                     */
+                    'line-color': 'mapData(weight, 5, 15, orange, red)',
+                    'target-arrow-shape': 'triangle',
+                    'opacity': 0.7
                  }),
-            layout: {
-                name: 'cose',
-                gravity: -10,
-                initialTemp: 100000,
-                nodeRepulsion: function(node){return 100000;},
-                fit: true
-            },
             minZoom: 0.5,
-            maxZoom: 10,
+            maxZoom: 5,
             wheelSensitivity: 0.2,
             boxSelectionEnabled: true,
             ready: function() {}
         })
-
-        cyto.$('#s1s2').qtip({
-          content: function (event, api) {
-              // Make a request to the external HTML file
-              $.ajax({
-                  url: 'linkpopup.html',
-                  dataType: "html"
-              })
-              .then(function (html) {
-                  // Grab the element from the retrieved URL using above selector
-                  var element = jQuery.parseHTML(html);
-                  api.set('content.text', element);
-              });
-          },
-            position: {
-                my: 'bottom left',
-                at: 'top center',
-                target: cyto.$('#s1s2')
-            },
-            style: {
-                classes: 'qtip-bootstrap',
-                tip: {
-                    width: 16,
-                    height: 8,
-                    border: 1
-                }
-           }
-      });
-
     }
 
+    function loadSwitches() {
+        /**
+         * Loads the switches from the controller and adds them
+         * to the cytoscape graph.
+         */
+        $.ajax({
+            url: "http://" + ipaddress + ":" + restport + "/wm/core/controller/switches/json",
 
+            /* On success add each switch as a node in the graph */
+            success: function (data) {
+                /* Add all the nodes from the JSON into a list */
+                var nodes = [];
+                for (var i = 0; i < data.length; i++) {
+                    nodes.push({
+                        group: "nodes",
+                        data: {
+                            id: data[i]["switchDPID"],
+                            name: data[i]["switchDPID"],
+                            type: NODE_SWITCH
+                        }
+                    });
+                }
+
+                /* Add the list to the cytoscape graph */
+                cyto.add(nodes);
+
+                /* Add tool-tips that appear on clicks */
+                cyto.on("tap", "node", function (event) {
+                    var src = event.target.id();
+                    event.target.qtip({
+                        content: function (event, api) {
+                            $.ajax({
+                                url: 'switchpopup.html',
+                                dataType: "html"
+                            }).then(function (html) {
+                                var $html = $('<div/>', {html:html});
+                                api.set('content.text', $html.html());
+                                $.ajax({
+                                    url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
+                                    success: function (dat) {
+                                        console.log(dat);
+                                        $html.find('#flowTable').DataTable({
+                                            data: dat["flows"][0],
+                                            columns: [
+                                                {data: 'table_id'},
+                                                {data: 'packet_count'},
+                                                {data: 'byte_count'},
+                                                {data: 'duration_sec'},
+                                                {data: 'priority'},
+                                                {data: 'idle_timeout_s'},
+                                                {data: 'hard_timeout_s'},
+                                                {data: 'flags'},
+                                                {data: 'instructions.instruction_apply_actions.actions'}
+                                            ]
+                                        });
+                                        api.set('content.text', $html.html());
+                                    }
+                                });
+                            })
+                        },
+                        overwrite: false,
+                        show: {
+                            solo: true
+                        },
+                        hide: {
+                            fixed: true,
+                            when: {
+                                event: 'click'
+                            }
+                        },
+                        position: {
+                            my: 'bottom center',
+                            at: 'top center'
+                        },
+                        style: {
+                            classes: 'qtip-bootstrap my-qtip',
+                            tip: {
+                                width: 16,
+                                height: 8
+                            }
+                        }
+                    }, event);
+                });
+            },
+
+            /* If theres an error retrieving the switches log the error */
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error(jqXHR.responseText);
+                alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
+                      textStatus + " \n Error Thrown: " + errorThrown);
+            }
+        });
+    }
+
+    function loadInternalLinks() {
+        /**
+         * Loads all the links between switches which are defined as an
+         * "internal" link.
+         *
+         * @see: http://127.0.0.1:8080/wm/topology/links/json
+         */
+
+         $.ajax({
+             url: "http://" + ipaddress + ":" + restport + "/wm/topology/links/json",
+
+             /* If we can get the data from the REST API */
+             success: function (links) {
+                 /* For each link we need to add an edge between the switches */
+                 edges = [];
+                 for (var i = 0; i < links.length; i++) {
+                     edges.push({
+                         group: "edges",
+                         data: {
+                             id: links[i]["src-switch"] + "_" + links[i]["dst-switch"],
+                             source: links[i]["src-switch"],
+                             target: links[i]["dst-switch"],
+                             weight: 10
+                         }
+                     })
+                 }
+
+                 /* Add the data to the cytoscape graph */
+                 cyto.add(edges);
+             }
+         });
+    }
+
+    function loadHosts() {
+        /**
+         * Loads all the hosts from the controller and adds them to the
+         * cytoscape graph.
+         */
+        $.ajax({
+            url: "http://" + ipaddress + ":" + restport + "/wm/device/",
+
+            success: function (hosts) {
+                data = [];
+                hosts = hosts.devices;
+                for (var i = 0; i < hosts.length; i++) {
+                    if (hosts[i]["attachmentPoint"].length > 0) {
+                        data.push({
+                            group: "nodes",
+                            data: {
+                                id: hosts[i]["mac"][0],
+                                name: hosts[i]["mac"][0],
+                                type: NODE_HOST
+                            }
+                        });
+                    }
+
+                    /* Parse all the links between hosts <-> switches */
+                    for (var j = 0; j < hosts[i]["attachmentPoint"].length; j++) {
+                        data.push({
+                            group: "edges",
+                            data: {
+                                id: hosts[i]["attachmentPoint"][j]["switch"] + "_" + hosts[i]["mac"][0],
+                                source: hosts[i]["mac"][0],
+                                target: hosts[i]["attachmentPoint"][j]["switch"],
+                                weight: 10
+                            }
+                        })
+                    }
+
+                    /* Add the data to the cytoscape graph */
+                    cyto.add(data);
+                }
+
+                cyto.layout({
+                    name: 'cose',
+                    gravity: -10,
+                    initialTemp: 100000,
+                    nodeRepulsion: function(node) {
+                        return 100000;
+                    },
+                    fit: true
+                }).run();
+
+                /* Add the edge pop-up */
+                cyto.on("tap", "edge", function (event) {
+                    var src = event.target.id().split("_")[0];
+                    var dst = event.target.id().split("_")[1];
+
+                    event.target.qtip({
+                        content: function (event, api) {
+                            $.ajax({
+                                url: 'linkpopup.html',
+                                dataType: "html"
+                            }).then(function (html) {
+                                var $html = $('<div/>', {html:html});
+                                $.ajax({
+                                    url: "http://" + ipaddress + ":" + restport + "/wm/statistics/bandwidth/" + src + "/1/json",
+                                    dataType: "json",
+                                    success: function(data) {
+                                        $html.find("#popup-capacity").html(formatSpeed(data[0]["link-speed-bits-per-second"]));
+
+                                        /* Calculate overall bandwidth */
+                                        var bandwidth = parseInt(data[0]["bits-per-second-rx"]) + parseInt(data[0]["bits-per-second-tx"]);
+                                        $html.find("#popup-bandwidth").html(formatSpeed(bandwidth));
+                                        api.set('content.text', $html.html());
+                                    },
+
+                                    error: function (jqXHR, textStatus, errorThrown) {
+                                        console.error(jqXHR.responseText);
+                                        alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
+                                              textStatus + " \n Error Thrown: " + errorThrown);
+                                    }
+                                });
+
+                                $.ajax({
+                                    url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
+                                    dataType: "json",
+                                    success: function(data) {
+                                        console.log(data.flows[0]);
+                                        $html.find("#popup-packet-count").html(data.flows[0]["packet_count"]);
+                                        $html.find("#popup-data-count").html(formatSize(data.flows[0]["byte_count"]));
+                                        api.set('content.text', $html.html());
+                                    },
+
+                                    error: function (jqXHR, textStatus, errorThrown) {
+                                        console.error(jqXHR.responseText);
+                                        alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
+                                              textStatus + " \n Error Thrown: " + errorThrown);
+                                    }
+                                });
+                            });
+                        },
+                        show: {
+                            solo: true
+                        },
+                        hide: {
+                            fixed: true,
+                            when: {
+                                event: 'click'
+                            }
+                        },
+                        position: {
+                            my: 'bottom center',
+                            at: 'top center'
+                        },
+                        style: {
+                            classes: 'qtip-bootstrap',
+                            tip: {
+                                width: 16,
+                                height: 8
+                            }
+                        }
+                    }, event);
+                });
+            },
+
+            /* If there was an error log and show pop-up */
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR.responseText);
+                alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
+                      textStatus + " \n Error Thrown: " + errorThrown);
+            }
+        });
+    }
+
+    /*
+     * Helper function to convert bytes to a string with correct units.
+     * */
+    function formatSpeed(bytes) {
+        if (bytes >= 1000000000) {
+            bytes = (bytes / 1000000000).toFixed(2) + ' Gbps';
+        }
+        else if (bytes >= 1000000) {
+            bytes = (bytes / 1000000).toFixed(2) + ' Mbps';
+        }
+        else if (bytes >= 1000) {
+            bytes = (bytes / 1000).toFixed(2) + ' Kbps';
+        }
+        else if (bytes > 1) {
+            bytes = bytes + ' bps';
+        }
+        else if (bytes == 1) {
+            bytes = bytes + ' bps';
+        }
+        else {
+            bytes = '0 bps';
+        }
+        return bytes;
+    }
+
+    function formatSize(bytes) {
+        if (bytes >= 1000000000) {
+            bytes = (bytes / 1000000000).toFixed(2) + ' GB';
+        }
+        else if (bytes >= 1000000) {
+            bytes = (bytes / 1000000).toFixed(2) + ' MB';
+        }
+        else if (bytes >= 1000) {
+            bytes = (bytes / 1000).toFixed(2) + ' KB';
+        }
+        else if (bytes > 1) {
+            bytes = bytes + ' bytes';
+        }
+        else if (bytes == 1) {
+            bytes = bytes + ' byte';
+        }
+        else {
+            bytes = '0 bytes';
+        }
+        return bytes;
+    }
+
+    /* TODO: Need to make add more efficient by only adding once */
     draw();
-
-
+    loadSwitches();
+    loadInternalLinks();
+    loadHosts();
 </script>
-
 </body>
-
 </html>
