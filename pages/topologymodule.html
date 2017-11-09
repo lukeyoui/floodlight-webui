@@ -101,10 +101,20 @@
     var SWITCH_BG = "#CE4345";
     var HOST_BG = "#589DFE";
 
+    /* Contant for length of MAC in string form */
+    var MAC_LEN = 17;
+
     var cyto = null;
 
     /* Cache for bandwidth values */
     var bandwidth = [];
+
+    /* TODO: Need a method to fill these values, it should probably
+     *       use the websocket to send a request? maybe get rid of them
+     *       and pass directly into a creation function
+     */
+    var nodes = [];
+    var edges = [];
 
     /*
     * This function draws the network and assigns actions to it as well.
@@ -115,8 +125,8 @@
         cyto = cytoscape({
             container: document.getElementById("cy"),
             elements: {
-                nodes: [],
-                edges: []
+                nodes: nodes,
+                edges: edges
             },
             /* Set the CSS styles for the graph */
             style: cytoscape.stylesheet()
@@ -250,16 +260,25 @@
                         content: function (event, api) {
                             $.ajax({
                                 url: 'switchpopup.html',
-                                dataType: "html"
+                                dataType: "html",
+                                success: function(html) {
+                                    var $html = $('<div/>', {html:html});
+                                    api.set('content.text', $html.html());
+                                },
+                                error: function (jqXHR, textStatus, errorThrown) {
+                                    console.error(jqXHR.responseText);
+                                }
                             }).then(function (html) {
-                                var $html = $('<div/>', {html:html});
-                                api.set('content.text', $html.html());
                                 $.ajax({
                                     url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
                                     success: function (dat) {
-                                        console.log(dat);
-                                        $html.find('#flowTable').DataTable({
-                                            data: dat["flows"][0],
+                                        $("#flowTable").DataTable({
+                                            /* TODO: Need to look into scrolling feature */
+                                            info: false,
+                                            searching: false,
+                                            lengthChange: false,
+                                            paging: false,
+                                            data: dat["flows"],
                                             columns: [
                                                 {data: 'table_id'},
                                                 {data: 'packet_count'},
@@ -272,10 +291,12 @@
                                                 {data: 'instructions.instruction_apply_actions.actions'}
                                             ]
                                         });
-                                        api.set('content.text', $html.html());
+                                    },
+                                    error: function (jqXHR, textStatus, errorThrown) {
+                                        console.error(jqXHR.responseText);
                                     }
                                 });
-                            })
+                            });
                         },
                         overwrite: false,
                         show: {
@@ -285,6 +306,15 @@
                             fixed: true,
                             when: {
                                 event: 'click'
+                            }
+                        },
+                        events: {
+                            /*
+                            * When told to hide, we should just destroy the pop-up so we can
+                            * re-create it later (so that DataTable does not complain)
+                            */
+                            hide: function(event, api) {
+                                api.destroy(true);
                             }
                         },
                         position: {
