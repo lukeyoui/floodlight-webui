@@ -26,9 +26,6 @@
     <!-- Custom Fonts -->
     <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
 
-
-    <link href="../bower_components/visjs/vis.css" rel="stylesheet"/>
-
     <link type="text/css" rel="stylesheet" src="../bower_components/qtip/jquery.qtip.css"></link>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -48,8 +45,13 @@
         #page-wrapper {
             height: auto;
         }
-        .qtip.my-qtip {
-            max-width: none;
+        .qtip.qtip-switch {
+            max-width: 850px;
+	        min-width: 300px;
+        }
+        .qtip.qtip-host {
+            max-width: 500px;
+	        min-width: 300px;
         }
         .datatable-center {
             text-align: center;
@@ -413,7 +415,7 @@
                             at: 'top center'
                         },
                         style: {
-                            classes: 'qtip-bootstrap my-qtip',
+                            classes: 'qtip-bootstrap qtip-switch',
                             tip: {
                                 width: 16,
                                 height: 8
@@ -578,7 +580,7 @@
                             at: 'top center'
                         },
                         style: {
-                            classes: 'qtip-bootstrap',
+                            classes: 'qtip-bootstrap qtip-host',
                             tip: {
                                 width: 16,
                                 height: 8
@@ -625,7 +627,7 @@
                             at: 'top center'
                         },
                         style: {
-                            classes: 'qtip-bootstrap my-qtip',
+                            classes: 'qtip-bootstrap qtip-host',
                             tip: {
                                 width: 16,
                                 height: 8

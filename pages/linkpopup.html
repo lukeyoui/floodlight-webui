@@ -9,15 +9,9 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
 
-
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+
     <style type="text/css">
         .table > tbody > tr:first-child > td {
             border: none;
@@ -29,42 +23,61 @@
 </head>
 <body>
     <ul id="tabs" class="nav nav-tabs">
-        <li role="presentation" class="active"><a data-toggle="tab" href="#tabstats">Stats</a></li>
+        <li role="presentation" class="active"><a data-toggle="tab" href="#linkPopupStats">Stats</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#linkPopupEndpoints">Endpoints</a></li>
         <li role="presentation"><a data-toggle="tab" href="#taboptions">Options</a></li>
     </ul>
+
+    <!-- Tab declarations -->
     <div class="tab-content">
-        <div id="tabstats" class="tab-pane fade in active">
+
+        <!-- Stats tab declaration -->
+        <div id="linkPopupStats" class="tab-pane fade in active">
             <div class="container-fluid">
                 <div class="row">
                     <table class="table table-hover">
                         <tbody>
                             <tr>
-                                <td>Capacity</td>
+                                <td><b>Capacity</b></td>
                                 <td id="popup-capacity" class="text-right">Unknown</td>
                             </tr>
                             <tr>
-                                <td>Bandwidth</td>
+                                <td><b>Bandwidth</b></td>
                                 <td id="popup-bandwidth" class="text-right">Unknown</td>
                             </tr>
                             <tr>
-                                <td>Packets</td>
+                                <td><b>Packets</b></td>
                                 <td id="popup-packet-count" class="text-right">Unknown</td>
                             </tr>
                             <tr>
-                                <td>Data</td>
+                                <td><b>Data</b></td>
                                 <td id="popup-data-count" class="text-right">Unknown</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div> <!-- End of stats tab declaration -->
+
+        <div id="linkPopupEndpoints" class="tab-pane fade">
+            <table id="hostPopupLinksTable" class='table table-bordered table-striped table-hover responsive-utilities'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Switch</th>
+                        <th>Port</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
+
+        <!-- Options tab declaration -->
         <div id="taboptions" class="tab-pane fade">
             <p>
                 <!-- Look at adding in sliders as settings here -->
               options
             </p>
-        </div>
+        </div> <!-- End of tab declaration -->
     </div>
 
 <!-- Bootstrap Core JavaScript -->
