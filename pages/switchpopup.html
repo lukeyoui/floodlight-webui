@@ -9,46 +9,140 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
 
-
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <!-- Custom Fonts -->
+    <!--<link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
+
+    <style type="text/css">
+        .table-borderless > tbody > tr:first-child > td {
+            border: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <i class="fa fa-info"></i> Flow Table
-        </div>
-        <!-- /.panel-heading -->
-        <div class="panel-body">
-            <table class='table table-bordered table-striped table-hover responsive-utilities'
-                   id="flowTable">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Packets</th>
-                    <th>Data</th>
-                    <th>Duration</th>
-                    <th>Priority</th>
-                    <th>Idle Timeout</th>
-                    <th>Hard Timeout</th>
-                    <th>Flags</th>
-                    <th>Instructions</th>
-                </tr>
-                </thead>
-            </table>
+    <!-- Pop-up tabs for the Host -->
+    <ul id="switchPopupTabs" class="nav nav-tabs">
+        <li role="presentation" class="active"><a data-toggle="tab" href="#switchPopupInfo">Info</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupFlow">Flow Summary</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupTable">Flow Table</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupOptions">Options</a></li>
+    </ul>
 
-        </div>
-        <!-- /.panel-body -->
-    </div>
+    <!-- Tab declarations -->
+    <div class="tab-content">
 
+        <!-- Information tab declaration -->
+        <div id="switchPopupInfo" class="tab-pane fade in active">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-borderless table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>DPID</b></td>
+                                <td id="switchPopupDPID" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Version</b></td>
+                                <td id="switchPopupVersion" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Vendor</b></td>
+                                <td id="switchPopupVender" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Hardware Info</b></td>
+                                <td id="switchPopupHWInfo" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of information tab declaration -->
+
+        <!-- Flow summary tab declaration -->
+        <div id="switchPopupFlow" class="tab-pane fade in">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-borderless table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>Flow Count</b></td>
+                                <td id="switchPopupFlowCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Packet Count</b></td>
+                                <td id="switchPopupPacketCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Data Count</b></td>
+                                <td id="switchPopupDataCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Buffer</b></td>
+                                <td id="switchPopupBuffer" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Table Count</b></td>
+                                <td id="switchPopupTableCount" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of flow summary tab declaration -->
+
+        <!-- Flow table tab declaration -->
+        <div id="switchPopupTable" class="tab-pane fade in">
+            <div class="container-fluid">
+                <table id="switchPopupFlowTable" class='table table-bordered table-striped table-hover responsive-utilities'>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Packets</th>
+                            <th>Data</th>
+                            <th>Duration</th>
+                            <th>Priority</th>
+                            <th>Idle Timeout</th>
+                            <th>Hard Timeout</th>
+                            <th>Flags</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div> <!-- End of flow table tab declaration -->
+
+        <!-- Options tab declaration -->
+        <div id="switchPopupOptions" class="tab-pane fade in">
+            <div class="btn-group-vertical btn-block">
+                <a href="#switchPopupWarning" class="btn btn-default" data-toggle="collapse">Enable/Disable Switch</a>
+                <div id="switchPopupWarning" class="panel-collapse collapse panel-danger">
+                    <div class="panel-heading">
+                        <i class="fa fa-warning"></i> Warning
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Performing this action could negatively affect the network.
+                            Are you sure you wish to continue?
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a href="#switchPopupWarning" class="btn btn-warning" data-toggle="collapse">Continue</a>
+                            <a href="#switchPopupWarning" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-default">View Full Switch Information</a>
+            </div>
+        </div> <!-- End of options tab declaration -->
+
+    </div> <!-- End of tab declarations -->
+
+<!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
 <!-- Bootstrap Core JavaScript -->
 <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 

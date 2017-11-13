@@ -11,8 +11,20 @@
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
+    <!-- Bootstrap switches -->
+    <link href="../bower_components/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet"/>
+
     <!-- Custom Fonts -->
     <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+    <style type="text/css">
+        .table-borderless > tbody > tr:first-child > td {
+            border: none;
+        }
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,18 +42,18 @@
         <div id="hostPopupInfo" class="tab-pane fade in active">
             <div class="container-fluid">
                 <div class="row">
-                    <table class="table table-hover">
+                    <table class="table table-borderless table-hover">
                         <tbody>
                             <tr>
-                                <td>IP</td>
+                                <td><b>IP</b></td>
                                 <td id="hostPopupIP" class="text-right">Unknown</td>
                             </tr>
                             <tr>
-                                <td>MAC</td>
+                                <td><b>MAC</b></td>
                                 <td id="hostPopupMAC" class="text-right">Unknown</td>
                             </tr>
                             <tr>
-                                <td>Last Seen</td>
+                                <td><b>Last Seen</b></td>
                                 <td id="hostPopupLastSeen" class="text-right">Unknown</td>
                             </tr>
                         </tbody>
@@ -52,7 +64,7 @@
 
         <!-- Link tab declaration -->
         <div id="hostPopupLinks" class="tab-pane fade">
-            <table id="flowTable" class='table table-bordered table-striped table-hover responsive-utilities'>
+            <table id="hostPopupLinksTable" class='table table-bordered table-striped table-hover responsive-utilities'>
                 <thead>
                     <tr>
                         <th>#</th>
@@ -64,19 +76,97 @@
         </div>
 
         <!-- Options tab declaration -->
-        <div id="hostPopupOptions" class="tab-pane fade in active">
-            <div class="container-fluid">
-                <p>Options</p>
-            </div>
+        <div id="hostPopupOptions" class="tab-pane fade">
+            <table class="table table-borderless">
+                <tbody>
+                    <tr>
+                        <td class="align-bottom"><b>Host State:</b></td>
+                        <td id="hostPopupIP" class="text-right">
+                            <input id="hostPopupEnabledSwitch" data-toggle="switch" checked="" type="checkbox"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-    </div> <!-- End of link tab declaration -->
+    </div> <!-- End of tab declarations -->
 
-    <!-- jQuery -->
-    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <!-- Warning dialog declaration -->
+    <div id="hostPopupConfirm" class="modal fade">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <!-- Warning dialog header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Warning</h4>
+                </div>
+
+                <!-- Warning dialog body -->
+                <div class="modal-body">
+                    <p>Are you sure you want to make this change?</p>
+                </div>
+
+                <!-- Warning dialog options -->
+                <div class="modal-footer">
+                    <button id="hostPopupConfirmContinue" type="button" class="btn btn-warning">Continue</button>
+                    <button id="hostPopupConfirmCancel" type="button" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of warning dialog declaration -->
+
+
+    <!-- jQuery, uncomment if testing page by itself -->
+    <!-- Needs to be commented out or it overrides main page jQuery -->
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
 
     <!-- Bootstrap Core JavaScript -->
     <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
+    <!-- Bootstrap switches javascript -->
+    <script src="../bower_components/bootstrap-switch/dist/js/bootstrap-switch.min.js"></script>
+
+    <script>
+        /**
+        * Function to send the new state of the switch/host/line to the system.
+        * @param {Boolean} state - State of the switch/host/line
+        */
+        function disableOrEnable(state) {
+            console.log(state);
+        }
+
+        /* Register handlers on HTML objects */
+        $(document).ready(function() {
+            /* If the user clicks the continue button we can change the state */
+            $("#hostPopupConfirmContinue").click(function() {
+                $("#hostPopupEnabledSwitch").bootstrapSwitch("toggleState", true, true);
+                $("#hostPopupConfirm").modal("hide");
+
+                /* Send the state change to the system */
+                var state = $("#hostPopupEnabledSwitch").bootstrapSwitch('state');
+                disableOrEnable(state);
+            });
+
+            /* If the user clicks the cancel button on the dialog just close it */
+            $("#hostPopupConfirmCancel").click(function() {
+                $("#hostPopupConfirm").modal("hide");
+            });
+
+            $('#hostPopupEnabledSwitch').bootstrapSwitch({
+                onText: 'Enabled',
+                offText: 'Disabled',
+                onColor: 'success',
+                offColor: 'danger',
+                size: 'small',
+                onSwitchChange: function(e, state) {
+                    $('#hostPopupEnabledSwitch').bootstrapSwitch('state', !state, true);
+                    $("#hostPopupConfirm").modal("show");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

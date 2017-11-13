@@ -51,6 +51,9 @@
         .qtip.my-qtip {
             max-width: none;
         }
+        .datatable-center {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +90,8 @@
     /*
      * These cookies are set on the login page at login.html.
      * They are simply the IP address of your controller and the REST api port.
-     * */
+     */
+
     var ipaddress = $.cookie('cip');
     if (ipaddress == null || ipaddress == "") window.location.href = "login.html";
     var restport = $.cookie('cport');
@@ -227,6 +231,93 @@
         })
     }
 
+    /**
+    * Loads the host information to the pop-up created after clicking on
+    * the host.
+    * TODO: This stuff should be changed to use query params on popup pages
+    *
+    * @param {String} host - ID of the host that was clicked
+    */
+    function loadHostPopup(api, host) {
+        /* Load the popup HTML and set it in the QTIP window */
+        $.ajax({
+            url: "hostpopup.html",
+            dataType: "html",
+            success: function(html) {
+                /* Parse HTML string into real HTML and add it to window */
+                var $html = $('<div/>', {html: html});
+                api.set('content.text', $html.html());
+
+                /* Need to make another call that will load the link table and device info */
+                $.ajax({
+                    url: "http://" + ipaddress + ":" + restport + "/wm/device/",
+                    success: function(data) {
+                        /* Have to search for our MAC in the list */
+                        var device = null;
+                        for (var i = 0; i < data['devices'].length; i++) {
+                            if (data['devices'][i]['mac'][0] == host) {
+                                device = data['devices'][i];
+                                break;
+                            }
+                        }
+
+                        /* Check that we found the device or exit if we didn't */
+                        if (!device) {
+                            console.log("Could not find connected host: " + host);
+                            return;
+                        }
+
+                        /* Set the fields in the info tab */
+                        /* TODO: Format the date with 2 spaces (5 becomes 05) */
+                        var d = new Date(device['lastSeen']);
+                        $("#hostPopupIP").html(device['ipv4'].length ? device['ipv4'][0] : device['ipv6'][0]);
+                        $("#hostPopupMAC").html(host);
+                        $("#hostPopupLastSeen").html(d.getDate() + "/" + d.getMonth() + "/" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
+
+                        /* Add links to the link table */
+                        var t = $("#hostPopupLinksTable").DataTable({
+                            /* TODO: Need to look into scrolling feature */
+                            info: false,
+                            searching: false,
+                            lengthChange: false,
+                            paging: false,
+                            data: device["attachmentPoint"],
+                            columns: [
+                                {
+                                    data: null,
+                                    sortable: false,
+                                    sClass: 'datatable-center',
+                                    render: function (data, type, row, meta) {
+                                        return meta.row + meta.settings._iDisplayStart + 1;
+                                    }
+                                },
+                                {
+                                    data: 'switch',
+                                    sClass: 'datatable-center'
+                                },
+                                {
+                                    data: 'port',
+                                    sClass: 'datatable-center'
+                                }
+                            ]
+                        });
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error(jqXHR.responseText);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+    * Function that will load the switch popup data and display it after
+    * clicking on a switch.
+    */
+    function loadSwitchPopup(api, s) {
+
+    }
+
     function loadSwitches() {
         /**
          * Loads the switches from the controller and adds them
@@ -254,15 +345,15 @@
                 cyto.add(nodes);
 
                 /* Add tool-tips that appear on clicks */
-                cyto.on("tap", "node", function (event) {
+                cyto.on("tap", "node[type = 'SWITCH']", function (event) {
                     var src = event.target.id();
                     event.target.qtip({
                         content: function (event, api) {
                             $.ajax({
-                                url: 'switchpopup.html',
+                                url: "switchpopup.html",
                                 dataType: "html",
                                 success: function(html) {
-                                    var $html = $('<div/>', {html:html});
+                                    var $html = $('<div/>', {html: html});
                                     api.set('content.text', $html.html());
                                 },
                                 error: function (jqXHR, textStatus, errorThrown) {
@@ -272,7 +363,7 @@
                                 $.ajax({
                                     url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
                                     success: function (dat) {
-                                        $("#flowTable").DataTable({
+                                        $("#switchPopupFlowTable").DataTable({
                                             /* TODO: Need to look into scrolling feature */
                                             info: false,
                                             searching: false,
@@ -495,13 +586,53 @@
                         }
                     }, event);
                 });
-            },
 
-            /* If there was an error log and show pop-up */
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log(jqXHR.responseText);
-                alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
-                      textStatus + " \n Error Thrown: " + errorThrown);
+                cyto.on("tap", "node[type = 'HOST']", function (event) {
+                    var src = event.target.id();
+                    event.target.qtip({
+                        content: function (event, api) {
+                            loadHostPopup(api, src);
+                        },
+
+                        /* If there was an error log and show pop-up */
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log(jqXHR.responseText);
+                            alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
+                                  textStatus + " \n Error Thrown: " + errorThrown);
+                        },
+
+                        overwrite: false,
+                        show: {
+                            solo: true
+                        },
+                        hide: {
+                            fixed: true,
+                            when: {
+                                event: 'click'
+                            }
+                        },
+                        events: {
+                            /*
+                            * When told to hide, we should just destroy the pop-up so we can
+                            * re-create it later (so that DataTable does not complain)
+                            */
+                            hide: function(event, api) {
+                                api.destroy(true);
+                            }
+                        },
+                        position: {
+                            my: 'bottom center',
+                            at: 'top center'
+                        },
+                        style: {
+                            classes: 'qtip-bootstrap my-qtip',
+                            tip: {
+                                width: 16,
+                                height: 8
+                            }
+                        }
+                    }, event);
+                });
             }
         });
     }
