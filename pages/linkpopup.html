@@ -25,7 +25,7 @@
     <ul id="tabs" class="nav nav-tabs">
         <li role="presentation" class="active"><a data-toggle="tab" href="#linkPopupStats">Stats</a></li>
         <li role="presentation"><a data-toggle="tab" href="#linkPopupEndpoints">Endpoints</a></li>
-        <li role="presentation"><a data-toggle="tab" href="#taboptions">Options</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#linkPopupOptions">Options</a></li>
     </ul>
 
     <!-- Tab declarations -->
@@ -59,29 +59,58 @@
             </div>
         </div> <!-- End of stats tab declaration -->
 
+        <!-- Endpoints tab declaration -->
         <div id="linkPopupEndpoints" class="tab-pane fade">
-            <table id="hostPopupLinksTable" class='table table-bordered table-striped table-hover responsive-utilities'>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Switch</th>
-                        <th>Port</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>Endpoint 1</b></td>
+                                <td id="popup-capacity" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Endpoint 2</b></td>
+                                <td id="popup-bandwidth" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of endpoint tab declaration -->
 
         <!-- Options tab declaration -->
-        <div id="taboptions" class="tab-pane fade">
-            <p>
-                <!-- Look at adding in sliders as settings here -->
-              options
-            </p>
-        </div> <!-- End of tab declaration -->
-    </div>
+        <div id="linkPopupOptions" class="tab-pane fade">
+            <div class="btn-group-vertical btn-block">
+                <a href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Disable Link</a>
+                <div id="linkPopupWarning" class="panel-collapse collapse panel-danger">
+                    <div class="panel-heading">
+                        <i class="fa fa-warning"></i> Warning
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Performing this action could negatively affect the network.
+                            Are you sure you wish to continue?
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a href="#linkPopupWarning" class="btn btn-warning" data-toggle="collapse">Continue</a>
+                            <a href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-default">View Full Link Information</a>
+            </div>
+        </div> <!-- End of options tab declaration -->
 
-<!-- Bootstrap Core JavaScript -->
-<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    </div> <!-- End of tab declarations -->
 
+    <!-- jQuery, uncomment if testing page by itself -->
+    <!-- Needs to be commented out or it overrides main page jQuery -->
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
