@@ -47,7 +47,7 @@
         }
         .qtip.qtip-switch {
             max-width: 850px;
-	        min-width: 300px;
+	        min-width: 200px;
         }
         .qtip.qtip-host {
             max-width: 500px;
@@ -349,6 +349,7 @@
                 /* Add tool-tips that appear on clicks */
                 cyto.on("tap", "node[type = 'SWITCH']", function (event) {
                     var src = event.target.id();
+                    $.cookie('curSID', src, {expires: 1});
                     event.target.qtip({
                         content: function (event, api) {
                             $.ajax({
@@ -361,34 +362,6 @@
                                 error: function (jqXHR, textStatus, errorThrown) {
                                     console.error(jqXHR.responseText);
                                 }
-                            }).then(function (html) {
-                                $.ajax({
-                                    url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
-                                    success: function (dat) {
-                                        $("#switchPopupFlowTable").DataTable({
-                                            /* TODO: Need to look into scrolling feature */
-                                            info: false,
-                                            searching: false,
-                                            lengthChange: false,
-                                            paging: false,
-                                            data: dat["flows"],
-                                            columns: [
-                                                {data: 'table_id'},
-                                                {data: 'packet_count'},
-                                                {data: 'byte_count'},
-                                                {data: 'duration_sec'},
-                                                {data: 'priority'},
-                                                {data: 'idle_timeout_s'},
-                                                {data: 'hard_timeout_s'},
-                                                {data: 'flags'},
-                                                {data: 'instructions.instruction_apply_actions.actions'}
-                                            ]
-                                        });
-                                    },
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        console.error(jqXHR.responseText);
-                                    }
-                                });
                             });
                         },
                         overwrite: false,
@@ -555,6 +528,8 @@
                                         console.log(data.flows[0]);
                                         $html.find("#popup-packet-count").html(data.flows[0]["packet_count"]);
                                         $html.find("#popup-data-count").html(formatSize(data.flows[0]["byte_count"]));
+                                        $html.find("#linkPopupEP1").html(src);
+                                        $html.find("#linkPopupEP2").html(dst);
                                         api.set('content.text', $html.html());
                                     },
 
