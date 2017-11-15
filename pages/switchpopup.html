@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -14,6 +13,7 @@
 
     <!-- Custom Fonts -->
     <!--<link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>-->
+    <!-- TODO: Find why this is needed -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
 
     <style type="text/css">
@@ -144,134 +144,21 @@
 
     <!-- jQuery, uncomment if testing page by itself -->
     <!-- Needs to be commented out or it overrides main page jQuery -->
-    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
 
     <!-- Scripts for the Cookies and query parameters -->
-    <script src="../js/querystringparser.js"></script>
-    <script src="../js/jquery.cookie.js"></script>
+    <!--<script src="../js/querystringparser.js"></script>-->
+    <!--<script src="../js/jquery.cookie.js"></script>-->
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!--<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
 
     <!-- DataTables JavaScript -->
-    <script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
-    <script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
+    <!--<script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>-->
+    <!--<script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>-->
 
-    <script>
-    /* Load the IP and port for the controller */
-    var ipaddress = $.cookie('cip');
-    if (ipaddress == null || ipaddress == "") window.location.href = "login.html";
-    var restport = $.cookie('cport');
-    if (restport == null || restport == "") window.location.href = "login.html";
-
-    /* Load the cookie for the current switch ID */
-    var id = $.cookie("curSID");
-    if (id == null || id == "") id = getQueryParameterByName("id");
-
-    $(document).ready(function() {
-        /* Load the data for the info tab */
-        $.ajax({
-            url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + id + "/desc/json",
-            success: function(data) {
-                $("#switchPopupVersion").html(data.desc["version"]);
-                $("#switchPopupHWInfo").html(data.desc["hardware_description"]);
-                $("#switchPopupVendor").html(data.desc["manufacturer_description"]);
-                $("#switchPopupDPID").html(id);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Error: " + jqXHR.responseText + "\nStatus: " +
-                            textStatus + "\nError Thrown: " + errorThrown);
-            }
-        });
-
-        /* Load the data for the flow summary page */
-        $.ajax({
-            url: " http://" + ipaddress + ":" + restport + "/wm/core/switch/" + id + "/features/json",
-            success: function (data) {
-                $("#switchPopupBuffer").html(data["buffers"]);
-                $("#switchPopupTableCount").html(data["tables"]);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Error: " + jqXHR.responseText + "\nStatus: " +
-                            textStatus + "\nError Thrown: " + errorThrown);
-            }
-        });
-
-        /* Load the data for the flow summary page */
-        $.ajax({
-            url: " http://" + ipaddress + ":" + restport + "/wm/core/switch/" + id + "/aggregate/json",
-            success: function (data) {
-                $("#switchPopupFlowCount").html(data.aggregate["flow_count"]);
-                $("#switchPopupPacketCount").html(data.aggregate["packet_count"]);
-                $("#switchPopupDataCount").html(formatSize(data.aggregate["byte_count"]));
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Error: " + jqXHR.responseText + "\nStatus: " +
-                            textStatus + "\nError Thrown: " + errorThrown);
-            }
-        });
-
-        /* Load the flow table */
-        $.ajax({
-            url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + id + "/flow/json",
-            success: function (dat) {
-                $("#switchPopupFlowTable").DataTable({
-                    /* TODO: Need to look into scrolling feature */
-                    info: false,
-                    searching: false,
-                    lengthChange: false,
-                    paging: false,
-                    data: dat["flows"],
-                    columns: [
-                        {data: 'table_id'},
-                        {data: 'packet_count'},
-                        {data: 'byte_count'},
-                        {data: 'duration_sec'},
-                        {data: 'priority'},
-                        {data: 'idle_timeout_s'},
-                        {data: 'hard_timeout_s'},
-                        {data: 'flags'},
-                        {data: 'instructions.instruction_apply_actions.actions'}
-                    ]
-                });
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error(jqXHR.responseText);
-            }
-        });
-
-        /* Change link of button */
-        $("#switchPopupFullInfo").attr("href", "switchDetail.html?macAddress=" + id);
-    });
-
-    /**
-    * Formats the size and the units of a given quantity of bytes and returns
-    * the string representation.
-    * TODO: Should be moved to a common place
-    *
-    * @param{int} bytes - Byte count to format
-    */
-    function formatSize(bytes) {
-        if (bytes >= 1000000000) {
-            bytes = (bytes / 1000000000).toFixed(2) + ' GB';
-        }
-        else if (bytes >= 1000000) {
-            bytes = (bytes / 1000000).toFixed(2) + ' MB';
-        }
-        else if (bytes >= 1000) {
-            bytes = (bytes / 1000).toFixed(2) + ' KB';
-        }
-        else if (bytes > 1) {
-            bytes = bytes + ' bytes';
-        }
-        else if (bytes == 1) {
-            bytes = bytes + ' byte';
-        }
-        else {
-            bytes = '0 bytes';
-        }
-        return bytes;
-    }
-    </script>
+    <!-- Scripts to laod the data for the pop-up -->
+    <!--<script src="../js/common.js"></script>-->
+    <script src="../js/switchpopup.js"></script>
 </body>
 </html>

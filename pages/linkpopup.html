@@ -39,19 +39,19 @@
                         <tbody>
                             <tr>
                                 <td><b>Capacity</b></td>
-                                <td id="popup-capacity" class="text-right">Unknown</td>
+                                <td id="linkPopupCapacity" class="text-right">Unknown</td>
                             </tr>
                             <tr>
                                 <td><b>Bandwidth</b></td>
-                                <td id="popup-bandwidth" class="text-right">Unknown</td>
+                                <td id="linkPopupBandwidth" class="text-right">Unknown</td>
                             </tr>
                             <tr>
                                 <td><b>Packets</b></td>
-                                <td id="popup-packet-count" class="text-right">Unknown</td>
+                                <td id="linkPopupPacketCount" class="text-right">Unknown</td>
                             </tr>
                             <tr>
                                 <td><b>Data</b></td>
-                                <td id="popup-data-count" class="text-right">Unknown</td>
+                                <td id="linkPopupDataCount" class="text-right">Unknown</td>
                             </tr>
                         </tbody>
                     </table>
@@ -82,6 +82,8 @@
         <!-- Options tab declaration -->
         <div id="linkPopupOptions" class="tab-pane fade">
             <div class="btn-group-vertical btn-block">
+
+                <!-- Add collapsable panel as warning against changing state -->
                 <a href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Disable Link</a>
                 <div id="linkPopupWarning" class="panel-collapse collapse panel-danger">
                     <div class="panel-heading">
@@ -100,21 +102,41 @@
                         </div>
                     </div>
                 </div>
-                <a href="#" class="btn btn-default">View Full Link Information</a>
-            </div>
-        </div> <!-- End of options tab declaration -->
 
+                <!-- Add drop down to select statistics collection state -->
+                <a href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Statistics Collection</a>
+                <div id="linkPopupStatsDropdown" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <p>
+                            Should the controller collect statistics on links?
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a id="linkPopupStatsEnable" href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Enable</a>
+                            <a id="linkPopupStatsDisable" href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Disable</a>
+                            <a href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-default">View Full Link Information</a>
+            </div> <!-- End of button group -->
+        </div> <!-- End of options tab declaration -->
     </div> <!-- End of tab declarations -->
 
     <!-- jQuery, uncomment if testing page by itself -->
     <!-- Needs to be commented out or it overrides main page jQuery -->
-    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!--<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
 
-    <script>
+    <!-- Scripts for the Cookies and query parameters -->
+    <!--<script src="../js/querystringparser.js"></script>-->
+    <!--<script src="../js/jquery.cookie.js"></script>-->
 
-    </script>
+    <!-- Custom scripts -->
+    <!--<script src="../js/common.js"></script>-->
+    <script src="../js/linkpopup.js"></script>
 </body>
 </html>

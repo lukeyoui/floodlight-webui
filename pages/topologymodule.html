@@ -50,8 +50,12 @@
 	        min-width: 200px;
         }
         .qtip.qtip-host {
-            max-width: 500px;
+            max-width: 350px;
 	        min-width: 300px;
+        }
+        .qtip.qtip-link{
+            max-width: 350px;
+            min-width: 350px;
         }
         .datatable-center {
             text-align: center;
@@ -61,31 +65,22 @@
 <body>
     <div id="cy"></div>
 
-<!-- jQuery -->
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>
-
 <!-- Bootstrap Core JavaScript -->
 <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-
-<!-- Metis Menu Plugin JavaScript -->
-<script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
 
 <!-- DataTables JavaScript -->
 <script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
 <script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
 
-<!-- Custom Theme JavaScript -->
-<script src="../dist/js/sb-admin-2.js"></script>
-
 <!-- Page-Level Demo Scripts - Tables - Use for reference -->
 <script src="../js/querystringparser.js"></script>
 <script src="../js/jquery.cookie.js"></script>
+<script src="../js/common.js"></script>
 
 <!-- Custom scripts to load in HTML -->
-<script src="../js/navbar.js"></script>
 <script src="../bower_components/cytoscape/dist/cytoscape.js"></script>
 <script src="../bower_components/qtip2/jquery.qtip.min.js"></script>
-<link href="../bower_components/qtip2/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+<link href="../bower_components/qtip2/jquery.qtip.min.css" rel="stylesheet" type="text/css"/>
 <script src="../bower_components/cytoscape-qtip/cytoscape-qtip.js"></script>
 
 <script type="text/javascript">
@@ -233,93 +228,6 @@
         })
     }
 
-    /**
-    * Loads the host information to the pop-up created after clicking on
-    * the host.
-    * TODO: This stuff should be changed to use query params on popup pages
-    *
-    * @param {String} host - ID of the host that was clicked
-    */
-    function loadHostPopup(api, host) {
-        /* Load the popup HTML and set it in the QTIP window */
-        $.ajax({
-            url: "hostpopup.html",
-            dataType: "html",
-            success: function(html) {
-                /* Parse HTML string into real HTML and add it to window */
-                var $html = $('<div/>', {html: html});
-                api.set('content.text', $html.html());
-
-                /* Need to make another call that will load the link table and device info */
-                $.ajax({
-                    url: "http://" + ipaddress + ":" + restport + "/wm/device/",
-                    success: function(data) {
-                        /* Have to search for our MAC in the list */
-                        var device = null;
-                        for (var i = 0; i < data['devices'].length; i++) {
-                            if (data['devices'][i]['mac'][0] == host) {
-                                device = data['devices'][i];
-                                break;
-                            }
-                        }
-
-                        /* Check that we found the device or exit if we didn't */
-                        if (!device) {
-                            console.log("Could not find connected host: " + host);
-                            return;
-                        }
-
-                        /* Set the fields in the info tab */
-                        /* TODO: Format the date with 2 spaces (5 becomes 05) */
-                        var d = new Date(device['lastSeen']);
-                        $("#hostPopupIP").html(device['ipv4'].length ? device['ipv4'][0] : device['ipv6'][0]);
-                        $("#hostPopupMAC").html(host);
-                        $("#hostPopupLastSeen").html(d.getDate() + "/" + d.getMonth() + "/" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
-
-                        /* Add links to the link table */
-                        var t = $("#hostPopupLinksTable").DataTable({
-                            /* TODO: Need to look into scrolling feature */
-                            info: false,
-                            searching: false,
-                            lengthChange: false,
-                            paging: false,
-                            data: device["attachmentPoint"],
-                            columns: [
-                                {
-                                    data: null,
-                                    sortable: false,
-                                    sClass: 'datatable-center',
-                                    render: function (data, type, row, meta) {
-                                        return meta.row + meta.settings._iDisplayStart + 1;
-                                    }
-                                },
-                                {
-                                    data: 'switch',
-                                    sClass: 'datatable-center'
-                                },
-                                {
-                                    data: 'port',
-                                    sClass: 'datatable-center'
-                                }
-                            ]
-                        });
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.error(jqXHR.responseText);
-                    }
-                });
-            }
-        });
-    }
-
-    /**
-    * Function that will load the switch popup data and display it after
-    * clicking on a switch.
-    */
-    function loadSwitchPopup(api, s) {
-
-    }
-
     function loadSwitches() {
         /**
          * Loads the switches from the controller and adds them
@@ -349,7 +257,7 @@
                 /* Add tool-tips that appear on clicks */
                 cyto.on("tap", "node[type = 'SWITCH']", function (event) {
                     var src = event.target.id();
-                    $.cookie('curSID', src, {expires: 1});
+                    $.cookie("curSID", src, {expires: 1});
                     event.target.qtip({
                         content: function (event, api) {
                             $.ajax({
@@ -494,51 +402,19 @@
                 cyto.on("tap", "edge", function (event) {
                     var src = event.target.id().split("_")[0];
                     var dst = event.target.id().split("_")[1];
+                    $.cookie("popupLinkSrc", src, {expires: 1});
+                    $.cookie("popupLinkDst", dst, {expires: 1});
 
                     event.target.qtip({
                         content: function (event, api) {
                             $.ajax({
                                 url: 'linkpopup.html',
-                                dataType: "html"
-                            }).then(function (html) {
-                                var $html = $('<div/>', {html:html});
-                                $.ajax({
-                                    url: "http://" + ipaddress + ":" + restport + "/wm/statistics/bandwidth/" + src + "/1/json",
-                                    dataType: "json",
-                                    success: function(data) {
-                                        $html.find("#popup-capacity").html(formatSpeed(data[0]["link-speed-bits-per-second"]));
-
-                                        /* Calculate overall bandwidth */
-                                        var bandwidth = parseInt(data[0]["bits-per-second-rx"]) + parseInt(data[0]["bits-per-second-tx"]);
-                                        $html.find("#popup-bandwidth").html(formatSpeed(bandwidth));
-                                        api.set('content.text', $html.html());
-                                    },
-
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        console.error(jqXHR.responseText);
-                                        alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
-                                              textStatus + " \n Error Thrown: " + errorThrown);
-                                    }
-                                });
-
-                                $.ajax({
-                                    url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
-                                    dataType: "json",
-                                    success: function(data) {
-                                        console.log(data.flows[0]);
-                                        $html.find("#popup-packet-count").html(data.flows[0]["packet_count"]);
-                                        $html.find("#popup-data-count").html(formatSize(data.flows[0]["byte_count"]));
-                                        $html.find("#linkPopupEP1").html(src);
-                                        $html.find("#linkPopupEP2").html(dst);
-                                        api.set('content.text', $html.html());
-                                    },
-
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        console.error(jqXHR.responseText);
-                                        alert('Error: ' + " " + jqXHR.responseText + " \n Status: " +
-                                              textStatus + " \n Error Thrown: " + errorThrown);
-                                    }
-                                });
+                                dataType: "html",
+                                success: function(html) {
+                                    /* Parse HTML string into real HTML and add it to window */
+                                    var $html = $('<div/>', {html: html});
+                                    api.set('content.text', $html.html());
+                                }
                             });
                         },
                         show: {
@@ -555,7 +431,7 @@
                             at: 'top center'
                         },
                         style: {
-                            classes: 'qtip-bootstrap qtip-host',
+                            classes: 'qtip-bootstrap qtip-link',
                             tip: {
                                 width: 16,
                                 height: 8
@@ -566,9 +442,20 @@
 
                 cyto.on("tap", "node[type = 'HOST']", function (event) {
                     var src = event.target.id();
+                    $.cookie("popupMAC", src, {expires: 1});
+
                     event.target.qtip({
                         content: function (event, api) {
-                            loadHostPopup(api, src);
+                            /* Load the popup HTML and set it in the QTIP window */
+                            $.ajax({
+                                url: "hostpopup.html",
+                                dataType: "html",
+                                success: function(html) {
+                                    /* Parse HTML string into real HTML and add it to window */
+                                    var $html = $('<div/>', {html: html});
+                                    api.set('content.text', $html.html());
+                                }
+                            });
                         },
 
                         /* If there was an error log and show pop-up */
@@ -612,53 +499,6 @@
                 });
             }
         });
-    }
-
-    /*
-     * Helper function to convert bytes to a string with correct units.
-     * */
-    function formatSpeed(bytes) {
-        if (bytes >= 1000000000) {
-            bytes = (bytes / 1000000000).toFixed(2) + ' Gbps';
-        }
-        else if (bytes >= 1000000) {
-            bytes = (bytes / 1000000).toFixed(2) + ' Mbps';
-        }
-        else if (bytes >= 1000) {
-            bytes = (bytes / 1000).toFixed(2) + ' Kbps';
-        }
-        else if (bytes > 1) {
-            bytes = bytes + ' bps';
-        }
-        else if (bytes == 1) {
-            bytes = bytes + ' bps';
-        }
-        else {
-            bytes = '0 bps';
-        }
-        return bytes;
-    }
-
-    function formatSize(bytes) {
-        if (bytes >= 1000000000) {
-            bytes = (bytes / 1000000000).toFixed(2) + ' GB';
-        }
-        else if (bytes >= 1000000) {
-            bytes = (bytes / 1000000).toFixed(2) + ' MB';
-        }
-        else if (bytes >= 1000) {
-            bytes = (bytes / 1000).toFixed(2) + ' KB';
-        }
-        else if (bytes > 1) {
-            bytes = bytes + ' bytes';
-        }
-        else if (bytes == 1) {
-            bytes = bytes + ' byte';
-        }
-        else {
-            bytes = '0 bytes';
-        }
-        return bytes;
     }
 
     /* TODO: Need to make add more efficient by only adding once */
