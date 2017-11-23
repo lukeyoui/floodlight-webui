@@ -254,6 +254,9 @@
                 /* Add the list to the cytoscape graph */
                 cyto.add(nodes);
 
+                /* Load internal links */
+                loadInternalLinks();
+
                 /* Add tool-tips that appear on clicks */
                 cyto.on("tap", "node[type = 'SWITCH']", function (event) {
                     var src = event.target.id();
@@ -344,6 +347,9 @@
 
                  /* Add the data to the cytoscape graph */
                  cyto.add(edges);
+
+                 /* Load the hosts */
+                 loadHosts();
              }
          });
     }
@@ -426,6 +432,15 @@
                                 event: 'click'
                             }
                         },
+                        events: {
+                            /*
+                            * When told to hide, we should just destroy the pop-up so we can
+                            * re-create it later (so that DataTable does not complain)
+                            */
+                            hide: function(event, api) {
+                                api.destroy(true);
+                            }
+                        },
                         position: {
                             my: 'bottom center',
                             at: 'top center'
@@ -504,8 +519,6 @@
     /* TODO: Need to make add more efficient by only adding once */
     draw();
     loadSwitches();
-    loadInternalLinks();
-    loadHosts();
 </script>
 </body>
 </html>
