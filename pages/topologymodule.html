@@ -37,16 +37,19 @@
     <style type="text/css">
         #cy {
             flex: 1;
-            height: calc(100vh - 51px);
+            height: calc(100vh - 200px);
         }
         body, html, #wrapper {
             height: auto;
+        }
+        body.visualizing #clearFlow {
+            visibility: visible;
         }
         #page-wrapper {
             height: auto;
         }
         .qtip.qtip-switch {
-            max-width: 850px;
+            max-width: 825px;
 	        min-width: 200px;
         }
         .qtip.qtip-host {
@@ -60,10 +63,19 @@
         .datatable-center {
             text-align: center;
         }
+        #clearFlow {
+            position: absolute;
+            right: 0;
+            top: 0;
+            margin-top: 150px;
+            margin-right: 25px;
+            visibility: hidden;
+        }
     </style>
 </head>
 <body>
     <div id="cy"></div>
+    <button id="clearFlow" type="button" class="btn btn-danger btn-lg">Clear</button>
 
 <!-- Bootstrap Core JavaScript -->
 <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -101,10 +113,22 @@
     /* Define some constants for background colour */
     var SWITCH_BG = "#CE4345";
     var HOST_BG = "#589DFE";
+    var DEFAULT_EDGE_COLOR = "#000000";
+    var BLOCKED_EDGE_COLOR = "#444444";
 
-    /* Contant for length of MAC in string form */
+    /* Constant for default line weights */
+    var DEFAULT_EDGE_WEIGHT = 10;
+    var MIN_EDGE_WEIGHT = 5;
+    var MAX_EDGE_WEIGHT = 15;
+
+    /* Constants for edge opacity */
+    var DEFAULT_EDGE_OPACITY = 0.80;
+    var BLOCKED_EDGE_OPACITY = 0.40;
+
+    /* Constant for length of MAC in string form */
     var MAC_LEN = 17;
 
+    /* Placeholder for the graph */
     var cyto = null;
 
     /* Cache for bandwidth values */
@@ -118,8 +142,8 @@
     var edges = [];
 
     /*
-    * This function draws the network and assigns actions to it as well.
-    **/
+     * This function draws the network and assigns actions to it as well.
+     */
     /* TODO: I would like to delete this method entirely maybe even add
              the loading into the ready function */
     function draw() {
@@ -212,20 +236,36 @@
                     'width': function(ele) {
                         return (ele.data('weight'));
                     },
-                    /* TODO: Need to find a way to make this include a range
-                     *       with green -> yellow because going green -> red
-                     *       is real ugly.
-                     */
-                    'line-color': 'mapData(weight, 5, 15, orange, red)',
-                    'target-arrow-shape': 'triangle',
-                    'opacity': 0.7
+                    'line-color': function(ele) {
+                        return (ele.data('color'));
+                    },
+                    'opacity': function(ele) {
+                        return (ele.data('opacity'));
+                    }
+                 })
+                 .selector('node.not-path').css({
+                     'opacity': 0.3,
+                     'z-index': 0
+                 })
+                 .selector('node.path').css({
+                     'opacity': 1,
+                     'z-index': 1
+                 })
+                 .selector('edge.not-path').css({
+                     'opacity': 0.1,
+                     'z-index': 0
+                 })
+                 .selector('edge.path').css({
+                     'opacity': DEFAULT_EDGE_OPACITY,
+                     'z-index': 1
                  }),
             minZoom: 0.5,
             maxZoom: 5,
             wheelSensitivity: 0.2,
             boxSelectionEnabled: true,
             ready: function() {}
-        })
+        });
+        top.cyto = cyto;
     }
 
     function loadSwitches() {
@@ -256,6 +296,9 @@
 
                 /* Load internal links */
                 loadInternalLinks();
+
+                /* After everything has been added load the downed links */
+                loadBlockedLinks();
 
                 /* Add tool-tips that appear on clicks */
                 cyto.on("tap", "node[type = 'SWITCH']", function (event) {
@@ -340,7 +383,11 @@
                              id: links[i]["src-switch"] + "_" + links[i]["dst-switch"],
                              source: links[i]["src-switch"],
                              target: links[i]["dst-switch"],
-                             weight: 10
+                             weight: DEFAULT_EDGE_WEIGHT,
+                             color: DEFAULT_EDGE_COLOR,
+                             opacity: DEFAULT_EDGE_OPACITY,
+                             source_port: links[i]["src-port"],
+                             target_port: links[i]["dst-port"]
                          }
                      })
                  }
@@ -385,7 +432,9 @@
                                 id: hosts[i]["attachmentPoint"][j]["switch"] + "_" + hosts[i]["mac"][0],
                                 source: hosts[i]["mac"][0],
                                 target: hosts[i]["attachmentPoint"][j]["switch"],
-                                weight: 10
+                                weight: DEFAULT_EDGE_WEIGHT,
+                                color: DEFAULT_EDGE_COLOR,
+                                opacity: DEFAULT_EDGE_OPACITY
                             }
                         })
                     }
@@ -406,10 +455,18 @@
 
                 /* Add the edge pop-up */
                 cyto.on("tap", "edge", function (event) {
-                    var src = event.target.id().split("_")[0];
-                    var dst = event.target.id().split("_")[1];
-                    $.cookie("popupLinkSrc", src, {expires: 1});
-                    $.cookie("popupLinkDst", dst, {expires: 1});
+                    /*
+                     * Use the data stored on the edge to set the values
+                     * for the source and destination addresses
+                     */
+                    $.cookie("popupLinkSrc", event.target.data("source"), {expires: 1});
+                    $.cookie("popupLinkDst", event.target.data("target"), {expires: 1});
+                    $.cookie("popupLinkSrcPort", event.target.data("source_port"), {expires: 1});
+                    $.cookie("popupLinkDstPort", event.target.data("target_port"), {expires: 1});
+                    $.cookie("popupLinkBlockable",
+                             (typeof event.target.data("source_port") == "undefined" ||
+                              typeof event.target.data("target_port") == "undefined") ? false : true,
+                             {expires: 1});
 
                     event.target.qtip({
                         content: function (event, api) {
@@ -516,9 +573,32 @@
         });
     }
 
+    function loadBlockedLinks() {
+        /**
+         * Loads all of the blocked links and sets their colours to gray.
+         */
+         $.ajax({
+             url: "http://" + ipaddress + ":" + restport + "/wm/topology/blockedlinks/json",
+
+             /* If we can get the data from the REST API */
+             success: function (links) {
+                 /* Need to edit the links to show the block */
+                 for (var i = 0; i < links.length; i++) {
+                     var id = links[i]["src-switch"] + "_" + links[i]["dst-switch"];
+                     cyto.$("edge[id = '" + id + "']").data({
+                         color: BLOCKED_EDGE_COLOR,
+                         opacity: BLOCKED_EDGE_OPACITY
+                     });
+                 }
+             }
+         });
+    }
+
     /* TODO: Need to make add more efficient by only adding once */
     draw();
     loadSwitches();
+
+
 </script>
 </body>
 </html>

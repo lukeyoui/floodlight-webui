@@ -19,8 +19,27 @@ $(document).ready(function() {
     /* Load the cookie for the current switch ID */
     var src = $.cookie("popupLinkSrc");
     var dst = $.cookie("popupLinkDst");
+    var srcPort = $.cookie("popupLinkSrcPort");
+    var dstPort = $.cookie("popupLinkDstPort");
+    var blockable = $.cookie("popupLinkBlockable");
     if (src == null || src == "") id = getQueryParameterByName("src");
     if (dst == null || dst == "") id = getQueryParameterByName("dst");
+    /* TODO: Need to add the rest as query parameters here */
+
+    /* Some links are not blockable, so disable if we are one of those */
+    if (blockable == "false") {
+        /* TODO: This isn't working for some reason */
+        $("#linkPopupBlockButton").attr("disabled", true);
+
+        /*
+         * Bootstrap is stupid and you have to disable the onclick
+         * or else it will just go through anyways
+         */
+         $("#linkPopupBlockButton").removeAttr("data-toggle");
+         $("#linkPopupBlockButton").on("click", function(e) {
+             e.preventDefault();
+         });
+    }
 
     /* Add button handler for turning on statistics collection */
     $("#linkPopupStatsEnable").click(function() {
@@ -58,6 +77,66 @@ $(document).ready(function() {
                 var notice = new PNotify({
                     title: "Statistic Status Changed",
                     text: "Statistics are disabled.",
+                    type: "success"
+                });
+
+                notice.get().click(function() {
+                    notice.remove();
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("Error: " + jqXHR.responseText + "\nStatus: " +
+                            textStatus + "\nError Thrown: " + errorThrown);
+            }
+        });
+    });
+
+    /* Add button handler for blocking links */
+    $("#linkPopupLinkBlock").click(function() {
+        $.ajax({
+            url: "http://" + ipaddress + ":" + restport + "/wm/topology/links/block/json",
+            type: "POST",
+            dataType: 'json',
+            data: JSON.stringify({
+                "src-switch": src,
+	            "src-port": parseInt(srcPort, 10),
+	            "dst-switch": dst,
+	            "dst-port": parseInt(dstPort, 10)
+            }),
+            success: function(data) {
+                var notice = new PNotify({
+                    title: "Link Status Changed",
+                    text: "Link was blocked.",
+                    type: "success"
+                });
+
+                notice.get().click(function() {
+                    notice.remove();
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("Error: " + jqXHR.responseText + "\nStatus: " +
+                            textStatus + "\nError Thrown: " + errorThrown);
+            }
+        });
+    });
+
+    /* Add button handler for un-blocking links */
+    $("#linkPopupLinkUnblock").click(function() {
+        $.ajax({
+            url: "http://" + ipaddress + ":" + restport + "/wm/topology/links/unblock/json",
+            type: "POST",
+            dataType: 'json',
+            data: JSON.stringify({
+                "src-switch": src,
+	            "src-port": parseInt(srcPort, 10),
+	            "dst-switch": dst,
+	            "dst-port": parseInt(dstPort, 10)
+            }),
+            success: function(data) {
+                var notice = new PNotify({
+                    title: "Link Status Changed",
+                    text: "Link was un-blocked.",
                     type: "success"
                 });
 

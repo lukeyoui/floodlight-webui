@@ -20,6 +20,9 @@
         .table-borderless > tbody > tr:first-child > td {
             border: none;
         }
+        .btn-group-no-scale {
+            width: 400px;
+        }
     </style>
 </head>
 <body>
@@ -97,27 +100,32 @@
         <!-- Flow table tab declaration -->
         <div id="switchPopupTable" class="tab-pane fade in">
             <div class="container-fluid">
-                <table id="switchPopupFlowTable" class='table table-bordered table-striped table-hover responsive-utilities'>
+                <table id="switchPopupFlowTable" class="table table-bordered table-striped table-hover responsive-utilities" width="100%">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Packets</th>
-                            <th>Data</th>
-                            <th>Duration</th>
+                            <th>Table</th>
+                            <th>In Port</th>
+                            <th>Src MAC</th>
+                            <th>Dst MAC</th>
                             <th>Priority</th>
-                            <th>Idle Timeout</th>
-                            <th>Hard Timeout</th>
-                            <th>Flags</th>
-                            <th>Instructions</th>
+                            <th>Eth Type</th>
+                            <th>Action</th>
+                            <th>Count</th>
                         </tr>
                     </thead>
                 </table>
+
+                <!-- Visualize button that spans bottom of table -->
+                <div class="btn-group btn-group-justified">
+                    <a id="switchPopupVisualize" href="#" class="btn btn-default">Visualize</a>
+                    <a href="#" class="btn btn-default">View Flow Statistics</a>
+                </div>
             </div>
         </div> <!-- End of flow table tab declaration -->
 
         <!-- Options tab declaration -->
         <div id="switchPopupOptions" class="tab-pane fade in">
-            <div class="btn-group-vertical btn-block">
+            <div class="btn-group-vertical btn-block btn-group-no-scale">
                 <a href="#switchPopupWarning" class="btn btn-default" data-toggle="collapse">Enable/Disable Switch</a>
                 <div id="switchPopupWarning" class="panel-collapse collapse panel-danger">
                     <div class="panel-heading">
@@ -141,6 +149,23 @@
         </div> <!-- End of options tab declaration -->
 
     </div> <!-- End of tab declarations -->
+
+    <!-- Modal declaration -->
+    <div id="switchPopupModal" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Visualization Error</h3>
+                </div>
+                <div class="modal-body">
+                    <p>You must select a flow to visualize from the table.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of modal declaration -->
 
     <!-- jQuery, uncomment if testing page by itself -->
     <!-- Needs to be commented out or it overrides main page jQuery -->
