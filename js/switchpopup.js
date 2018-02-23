@@ -128,7 +128,7 @@ $(document).ready(function() {
                 if (row_data == null) {
                     $('#switchPopupModal').modal('show');
                 } else {
-                    visualize(row_data);
+                    visualize(row_data, id);
                 }
             });
 
@@ -154,8 +154,9 @@ $(document).ready(function() {
  * that the flow takes through the network.
  *
  * @param row_data The row that is selected from the table to visualize
+ * @param sID The data path ID of the switch
  */
-function visualize(row_data) {
+function visualize(row_data, sID) {
     /* We only really care about matching match fields */
     var match_field = row_data.match;
 
@@ -174,11 +175,15 @@ function visualize(row_data) {
         }
     });
 
-    /* Query all of the network's flows from the controller */
+    /* Query the flow route */
     $.ajax({
-        url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/all/flow/json",
+        url: "http://" + ipaddress + ":" + restport + "/wm/routing/path/flow/" + sID + "/" + row_data.match.eth_src + "/" + row_data.match.eth_dst + "/" + row_data.match.eth_type + "/json",
         success: function (data) {
-            var matches = [];
+            /* We can't do anything if we have no data */
+            if (data.length == 0) {
+                return;
+            }
+
             $('body').addClass('visualizing');
 
             /* Want to batch commit the changes so it only redraws once  */
@@ -188,45 +193,24 @@ function visualize(row_data) {
              * Loop through all the switches and add ones that have matching
              * fields to the path list and add the rest to the non-path list
              */
-             for (var switch_id in data) {
-                 var obj = data[switch_id];
-                 var match_found = false;
+             top.cyto.$("node[type = 'SWITCH']").addClass('not-path');
+             top.cyto.$("node[type = 'HOST']").addClass('not-path');
 
-                 for (var i = 0; i < obj['flows'].length; i++) {
-                     if (matchEqual(obj['flows'][i]['match'], match_field)) {
-                         /* If we found a match we can stop looping through the flows */
-                         match_found = true;
-                         matches.push(switch_id);
-                         break;
-                     }
-                 }
-
-                 top.cyto.$("node[id = '" + switch_id + "']").addClass((match_found) ? 'path' : 'not-path');
-             }
-
-             /*
-              * Next need to add the hosts for the flow onto the path
-              */
-              top.cyto.$("node[type = 'HOST']").addClass('not-path');
-              top.cyto.$("node[id = '" + match_field.eth_dst + "']").addClass('path');
-              top.cyto.$("node[id = '" + match_field.eth_src + "']").addClass('path');
-
-             /*
-              * Finally need to add the edges between the switches
-              * TODO: This will not work for more than two switches with
-              *       interconnections. Need to find work-around.
-              */
-             matches.sort();
+             /* Set all edges by default to not on the path */
              top.cyto.elements('edge').addClass('not-path');
 
-             top.cyto.$("edge[id = '" + matches[0] + "_" + match_field.eth_dst + "']").addClass('path');
-             top.cyto.$("edge[id = '" + matches[0] + "_" + match_field.eth_src + "']").addClass('path');
+             /* Add the first and last nodes because they will be missed by the loop */
+             top.cyto.$("node[id = '" + data[0] + "']").addClass('path');
+             top.cyto.$("node[id = '" + data[data.length - 1] + "']").addClass('path');
 
-             top.cyto.$("edge[id = '" + matches[matches.length - 1] + "_" + match_field.eth_dst + "']").addClass('path');
-             top.cyto.$("edge[id = '" + matches[matches.length - 1] + "_" + match_field.eth_src + "']").addClass('path');
-
-             for (var i = 0; i < matches.length - 1; i++) {
-                 top.cyto.$("edge[id = '" + matches[i] + "_" + matches[i + 1] + "']").addClass('path');
+             /* Loop over the nodes and add the links to the path */
+             top.cyto.$("edge[id = '" + data[1] + "_" + data[0] + "']").addClass('path');
+             for (var i = 1; i < data.length - 1; i++) {
+                 top.cyto.$("node[id = '" + data[i] + "']").addClass('path');
+                 
+                 /* Need to do this because we don't know direction */
+                 top.cyto.$("edge[id = '" + data[i] + "_" + data[i + 1] + "']").addClass('path');
+                 top.cyto.$("edge[id = '" + data[i + 1] + "_" + data[i] + "']").addClass('path');
              }
 
              top.cyto.endBatch();
@@ -243,13 +227,14 @@ function visualize(row_data) {
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error: " + jqXHR.responseText + "\nStatus: " +
                         textStatus + "\nError Thrown: " + errorThrown);
+
+            notice.update({
+                title: 'Visualization Failed',
+                text : 'There was an error trying to compute the route.',
+                type : 'error',
+                hide : true,
+                icon: 'fa fa-exclamation-triangle'
+            });
         }
     });
-}
-
-// This is going away anyways so
-function matchEqual(m1, m2) {
-    return (m1.eth_dst == m2.eth_dst &&
-            m1.eth_src == m2.eth_src &&
-            m1.eth_type == m2.eth_type);
 }
