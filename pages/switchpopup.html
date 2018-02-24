@@ -11,6 +11,10 @@
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
+    <!-- DataTables CSS -->
+    <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
+          rel="stylesheet">
+
     <!-- Custom Fonts -->
     <!--<link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>-->
     <!-- TODO: Find why this is needed -->
@@ -22,6 +26,14 @@
         }
         .btn-group-no-scale {
             width: 400px;
+        }
+        th, td {
+            white-space: nowrap;
+        }
+
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -100,20 +112,23 @@
         <!-- Flow table tab declaration -->
         <div id="switchPopupTable" class="tab-pane fade in">
             <div class="container-fluid">
-                <table id="switchPopupFlowTable" class="table table-bordered table-striped table-hover responsive-utilities" width="100%">
-                    <thead>
-                        <tr>
-                            <th>Table</th>
-                            <th>In Port</th>
-                            <th>Src MAC</th>
-                            <th>Dst MAC</th>
-                            <th>Priority</th>
-                            <th>Eth Type</th>
-                            <th>Action</th>
-                            <th>Count</th>
-                        </tr>
-                    </thead>
-                </table>
+                <div>
+                    <table id="switchPopupFlowTable" class="table table-bordered table-striped table-hover responsive-utilities" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>In Port</th>
+                                <th>Src MAC</th>
+                                <th>Dst MAC</th>
+                                <th>Priority</th>
+                                <th>Eth Type</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
 
                 <!-- Visualize button that spans bottom of table -->
                 <div class="btn-group btn-group-justified">

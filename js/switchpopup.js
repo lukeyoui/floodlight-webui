@@ -75,9 +75,9 @@ $(document).ready(function() {
                 lengthChange: false,
                 paging: false,
                 ordering: false,
-                // TODO: Figure out why this was causing columns to not match width of data
-                //scrollY: '200px',
-                //scrollCollapse: true,
+                //sScrollX: "100%",
+                //scrollX: true,
+                //scrollY: true,
                 data: table_data["flows"],
                 columns: [
                     {
@@ -104,9 +104,6 @@ $(document).ready(function() {
                     },
                     {
                         data: 'instructions.instruction_apply_actions.actions'
-                    },
-                    {
-                        data: 'packet_count'
                     }
                 ]
             });
@@ -207,7 +204,7 @@ function visualize(row_data, sID) {
              top.cyto.$("edge[id = '" + data[1] + "_" + data[0] + "']").addClass('path');
              for (var i = 1; i < data.length - 1; i++) {
                  top.cyto.$("node[id = '" + data[i] + "']").addClass('path');
-                 
+
                  /* Need to do this because we don't know direction */
                  top.cyto.$("edge[id = '" + data[i] + "_" + data[i + 1] + "']").addClass('path');
                  top.cyto.$("edge[id = '" + data[i + 1] + "_" + data[i] + "']").addClass('path');
