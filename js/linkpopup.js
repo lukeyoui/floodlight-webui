@@ -22,13 +22,17 @@ $(document).ready(function() {
     var srcPort = $.cookie("popupLinkSrcPort");
     var dstPort = $.cookie("popupLinkDstPort");
     var blockable = $.cookie("popupLinkBlockable");
+
+    /* For testing we can open it with query parameters */
     if (src == null || src == "") id = getQueryParameterByName("src");
     if (dst == null || dst == "") id = getQueryParameterByName("dst");
-    /* TODO: Need to add the rest as query parameters here */
+    if (srcPort == null || srcPort == "") id = getQueryParameterByName("srcPort");
+    if (dstPort == null || dstPort == "") id = getQueryParameterByName("dstPort");
+    if (blockable == null || blockable == "") id = getQueryParameterByName("blockable");
 
     /* Some links are not blockable, so disable if we are one of those */
     if (blockable == "false") {
-        /* TODO: This isn't working for some reason */
+        /* Disable the block button if the link is not blockable */
         $("#linkPopupBlockButton").attr("disabled", true);
 
         /*
@@ -153,12 +157,30 @@ $(document).ready(function() {
 
     /* Load the statistical data (bandwidth and capacity) */
     $.ajax({
-        url: "http://" + ipaddress + ":" + restport + "/wm/statistics/bandwidth/" + src + "/1/json",
+        url: "http://" + ipaddress + ":" + restport + "/wm/statistics/bandwidth/" + src + "/" + srcPort + "/json",
         dataType: "json",
         success: function(data) {
             var bandwidth = parseInt(data[0]["bits-per-second-rx"]) + parseInt(data[0]["bits-per-second-tx"]);
             $("#linkPopupBandwidth").html(formatSpeed(bandwidth));
-            $("#linkPopupCapacity").html(formatSpeed(data[0]["link-speed-bits-per-second"]));
+
+            /* It says bps but it is actually kbps */
+            $("#linkPopupCapacity").html(formatSpeed(parseInt(data[0]["link-speed-bits-per-second"]) * 1000));
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log("Error: " + jqXHR.responseText + "\nStatus: " +
+                        textStatus + "\nError Thrown: " + errorThrown);
+        }
+    });
+
+    /* Load the latency on the link */
+    $.ajax({
+        url: "http://" + ipaddress + ":" + restport + "/wm/routing/paths/" + src + "/" + dst + "/1/json",
+        dataType: "json",
+        success: function(data) {
+            if (data.results != null && data.results.length >= 1) {
+                /* The first result should be the direct link as long as hop count is the metric */
+                $("#linkPopupLatency").html(data.results[0].latency);
+            }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error: " + jqXHR.responseText + "\nStatus: " +
