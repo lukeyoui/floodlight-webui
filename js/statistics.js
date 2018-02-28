@@ -4,7 +4,7 @@ var restport = $.cookie('cport');
 if (restport == null || restport == "") window.location.href = "login.html";
 
 $("#collectionChange").click(function () {
-    
+
 });
 
 function OpenStatistic() {
