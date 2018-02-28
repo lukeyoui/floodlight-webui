@@ -87,9 +87,9 @@ $(document).ready(function() {
         /* TODO: Find way to get this without hard coding */
         var socket = new WebSocket("ws://localhost:8111/events/");
         socket.onmessage = onMessage;
+        top.socket = socket;
 
         /* Send our subscription message */
-        socket.send(JSON.stringify({"subscribe": ["PortStatistics"]}));
     });
 });
 
@@ -126,27 +126,52 @@ function reload() {
     });
 }
 
-function onMessage(msg) {
-    console.log("Got msg: ", msg);
-    var msgJSON = JSON.parse(msg);
+function onMessage(event) {
 
-    /* We can't do anything about local ports */
-    if (msgJSON.get('portid') == "local") {
-        continue;
+
+    if (event.data == "Connection established to websocket") {
+        top.socket.send(JSON.stringify({"subscribe": ["PortStatistics"]}));
+        console.log("connected to WS");
+        return;
     }
 
-    var dpid = msgJSON.get('dpid');
-    var port = parseInt(msgJSON.get('portid'));
-    var cap = parseInt(msgJSON.get('currentSpeed')) * 1000;
-    var bw = parseInt(msgJSON.get('speedRX')) + parseInt(msgJSON.get('speedTX'));
+    var msg = event.data.split(", ");
+    /*
+    var msgJSON;
+    try {
+        msgJSON = JSON.parse(msg);
+    } catch (e) {
+        console.log(e);
+        return;{speedTX=0"
+1: "speedRX=0"
+2: "dpid=00:00:00:00:00:00:00:01"
+3: "portid=3"
+4: "currentSpeed=10000000}"
+    }*/
+
+    /* We can't do anything about local ports */
+    if (msg[3] == "portid=local") {
+        return;
+    }
+
+    //var dpid = msgJSON.get('dpid');
+    var dpid = msg[2].split("=")[1];
+    //var port = parseInt(msgJSON.get('portid'));
+    var port = parseInt(msg[3].split("=")[1]);
+    //var cap = parseInt(msgJSON.get('currentSpeed')) * 1000;
+    //var cap = parseInt(msg[4].split("=")[1].replace("}", "")) * 1000;
+    var cap = 4000;
+    //var bw = parseInt(msgJSON.get('speedRX')) + parseInt(msgJSON.get('speedTX'));
+    var bw = parseInt(msg[0].split("=")[1]) + parseInt(msg[1].split("=")[1]);
     var color = scaleColor(cap, bw);
+    console.log("color:", color);
 
     cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
         style: {
             'line-color': color
         }
     }, {
-        duration: 5000,
+        duration: 1000,
         complete: function() {
             console.log("Done");
         }
