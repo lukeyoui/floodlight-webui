@@ -82,8 +82,76 @@ $(document).ready(function() {
         /* If there was an error log it to the console */
         console.log('Error loading the data: ', err);
 
-    }).then(loadBlockedLinks);
+    }).then(loadBlockedLinks).then(function() {
+        /* Start our web-socket connection */
+        /* TODO: Find way to get this without hard coding */
+        var socket = new WebSocket("ws://localhost:8111/events/");
+        socket.onmessage = onMessage;
+
+        /* Send our subscription message */
+        socket.send(JSON.stringify({"subscribe": ["PortStatistics"]}));
+    });
 });
+
+function reload() {
+    Promise.resolve(loadStatisticsData()).then(function () {
+        for (var i = 0; i < capacities.length; i++) {
+            var dpid = capacities[i]['dpid'];
+            var port = parseInt(capacities[i]['port']);
+            var cap = parseInt(capacities[i]['link-speed-bits-per-second']) * 1000;
+            var bw = parseInt(capacities[i]["bits-per-second-rx"]) + parseInt(capacities[i]["bits-per-second-tx"]);
+            var color = scaleColor(cap, bw);
+
+            if (capacities[i]['port'] == "local") {
+                continue;
+            }
+
+            if (bw > 10000) {
+                console.log("changing: " + color + ", " + dpid);
+            }
+
+            cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
+                style: {
+                    'line-color': color
+                }
+            }, {
+                duration: 5000,
+                complete: function() {
+                    console.log("Done");
+                }
+            });
+        }
+    }, function (err) {
+        console.log('Error:', err);
+    });
+}
+
+function onMessage(msg) {
+    console.log("Got msg: ", msg);
+    var msgJSON = JSON.parse(msg);
+
+    /* We can't do anything about local ports */
+    if (msgJSON.get('portid') == "local") {
+        continue;
+    }
+
+    var dpid = msgJSON.get('dpid');
+    var port = parseInt(msgJSON.get('portid'));
+    var cap = parseInt(msgJSON.get('currentSpeed')) * 1000;
+    var bw = parseInt(msgJSON.get('speedRX')) + parseInt(msgJSON.get('speedTX'));
+    var color = scaleColor(cap, bw);
+
+    cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
+        style: {
+            'line-color': color
+        }
+    }, {
+        duration: 5000,
+        complete: function() {
+            console.log("Done");
+        }
+    });
+}
 
 /**
  * Initializes the cytoscape topology graph. Sets all of the CSS styles for
@@ -588,6 +656,12 @@ function scaleColor(capacity, bandwidth) {
     }
 
     /* Use linear function to calculate the amount of red in the link */
-    var red = Math.ceil((364.3 * usage) - 109.3);
-    return "#" + red.toString(16) + "0000";
+    var red = Math.ceil((364.3 * usage) - 109.3).toString(16);
+
+    /* Need to prepend a zero if we only have single digit */
+    if (red.length == 1) {
+        red = "0" + red;
+    }
+
+    return "#" + red + "0000";
 }
