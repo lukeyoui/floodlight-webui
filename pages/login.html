@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    
+
     <title>SB Admin 2 - Bootstrap Admin Theme</title>
 
     <!-- Bootstrap Core CSS -->
@@ -84,8 +84,8 @@
     <script type="text/javascript">
 
         var url = window.location.host.split(':');
-        var ip = "127.0.0.1";
-        var port = "8080";
+        var ip = url[0];
+        var port = url[1];
 
         $.cookie('cip', ip, { expires: 7 });
         $.cookie('cport', port, { expires: 7 });
@@ -96,7 +96,7 @@
             window.location.href = "index.html";
         else
         {
-            alert("Can not set the ip address! readed=" + readed);
+            alert("Can not set the ip address!");
         }
 
 

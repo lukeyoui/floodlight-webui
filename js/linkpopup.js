@@ -117,6 +117,18 @@ $(document).ready(function() {
                 notice.get().click(function() {
                     notice.remove();
                 });
+
+                /* Change the link color to the blocked color */
+                top.cyto.elements("edge[id = '" + src + "_" + dst + "']").animate({
+                    style: {
+                        'line-color': '#444444',
+                        'opacity': 0.4
+                    }
+                }, {
+                    duration: 500,
+                    complete: function() {}
+                });
+
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log("Error: " + jqXHR.responseText + "\nStatus: " +
@@ -146,6 +158,17 @@ $(document).ready(function() {
 
                 notice.get().click(function() {
                     notice.remove();
+                });
+
+                /* Change the link color to the blocked color */
+                top.cyto.elements("edge[id = '" + src + "_" + dst + "']").animate({
+                    style: {
+                        'line-color': '#000000',
+                        'opacity': 0.8
+                    }
+                }, {
+                    duration: 500,
+                    complete: function() {}
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {

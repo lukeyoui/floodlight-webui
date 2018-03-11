@@ -146,7 +146,7 @@
                     </div>
                 </a>
 
-                <!-- TODO: Button currently does nothing in old UI so -->
+                <!-- Load the amount of blocked ports -->
                 <a href="#" class="btn btn-danger">
                     <div class="row">
                         <div class="col-xs-3">
@@ -244,8 +244,9 @@
         if (!checkConnection(ipaddress, restport)) {
             console.log('Trying to show modal');
             $('#login-modal').modal('show');
+        } else {
+            startRefresh();
         }
-        else startRefresh();
     });
 
     /*
@@ -255,49 +256,45 @@
     function getControllerSummary() {
         $.ajax({
             url: "http://" + ipaddress + ":" + restport + "/wm/core/controller/summary/json",
-
             success: function (data) {
-
                 var switchCount = data["# Switches"];
                 var hostCount = data["# hosts"];
                 var linkCount = data["# inter-switch links"];
-                var portCount = data["# quarantine ports"];
-
-                //console.log(linkCount);
 
                 $("#switchCountDiv").html(switchCount);
                 $("#hostCountDiv").html(hostCount);
                 $("#linkCountDiv").html(linkCount);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        $.ajax({
+            url: "http://" + ipaddress + ":" + restport + "/wm/topology/blockedports/json",
+            success: function (data) {
+                var portCount = data["results"].length;
                 $("#portCountDiv").html(portCount);
             },
-            error  : function (jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log('Error: ' + ' ' + jqXHR.responseText +
+                            '\nStatus: ' + textStatus +
+                            '\nError Thrown: ' + errorThrown);
             }
         });
     }
-    getControllerSummary();
 
-    /*
+    /**
      * Refreshes all of the values on the page every second.
-     * */
+     */
     function startRefresh() {
-        target = document.getElementById('foo'); // your canvas element
-
         console.log("Refresh started!");
-        refreshHandler = setInterval(getControllerValues, 1000);
-        //getControllerValues();
+        getControllerSummary();
+        refreshHandler = setInterval(getControllerSummary, 2000);
     }
 
     function stopRefresh() {
         console.log("Refresh stopped!");
         clearInterval(refreshHandler);
-    }
-
-
-    /*
-     * Used to get all of the controller values. Makes refreshing the page easier.
-     **/
-    function getControllerValues() {
-        getControllerSummary();
     }
 
     function checkConnection(ip, port) {
@@ -332,8 +329,7 @@
             ipaddress = ip;
             restport = port;
         }
-        else
-        {
+        else {
             console.log("Can not set the ip address!");
         }
     }

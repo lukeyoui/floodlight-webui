@@ -18,8 +18,7 @@
     <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
 
     <!-- DataTables CSS -->
-    <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
-          rel="stylesheet">
+    <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
 
     <!-- DataTables Responsive CSS -->
     <link href="../bower_components/datatables-responsive/css/dataTables.responsive.css" rel="stylesheet">
@@ -40,6 +39,19 @@
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+    <style type="text/css">
+        div.dataTables_wrapper {
+            max-height: 200px;
+        }
+        .breadcrumb-item, .breadcrumb-item a {
+            font-size: 14px;
+        }
+        .vertical-align {
+            display: flex;
+            align-items: center;
+        }
+    </style>
 
 </head>
 
@@ -77,81 +89,108 @@
             </div>
             <!-- /.col-lg-12 -->
         </div>
+
+        <!-- Statistics collection header definition -->
         <div class="row">
             <div class="col-lg-12">
-                <div class="alert alert-success">
+                <div id="collectionAlert" class="alert alert-info">
                     <div class="row">
                         <div class="col-xs-3">
-                            <i id="collectionImg" class="fa fa-check-circle fa-5x"></i>
+                            <i id="collectionImg" class="fa fa-question-circle fa-5x"></i>
                         </div>
                         <div class="col-xs-9 text-right">
-                            <div class="huge" id="collectionStatus">Active</div>
+                            <div class="huge" id="collectionStatus">Loading</div>
                             <div>
-                                <a id="collectionChange" href="#" class="btn btn-sm btn-warning">Change</a>
+                                <a id="collectionChange" href="#" class="btn btn-sm btn-default">Change</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- /.row -->
+        </div> <!-- End of statistics collection header definition -->
+
+        <!-- Context switcher definition -->
         <div class="row">
             <div class="col-lg-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        Statistics
-                    </div>
-                    <!-- /.panel-heading -->
-                    <div class="panel-body">
+                <div class="panel panel-default">
 
-                        <div class="form-group">
-                            <div class="radio">
-                                <label>
-                                    <input type="radio" id="rbEnable" name="iCheck"> OPEN
-                                </label>
+                    <!-- Define the panel header with the back button -->
+                    <div id="panelHeader" style="padding-bottom:0;" class="panel-heading container-fluid">
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <a id="backButton" class="btn btn-default disabled" href="#tabHome">
+                                    <i class="fa fa-arrow-left"></i> Back
+                                </a>
                             </div>
-                            <div class="radio">
-                                <label>
-                                    <input type="radio" id="rbDisable" name="iCheck"> CLOSE
-                                </label>
+                            <div class="col-lg-9">
+                                <h4 class="text-right">Link Statistics</h4>
                             </div>
                         </div>
-                        <button type="button" id="btnChange" class="btn btn-primary">Change</button>
 
                     </div>
-                    <!-- /.panel-body -->
-                </div>
-                <!-- /.panel -->
 
-            </div>
-            <!-- /.col-lg-12 -->
-        </div>
-        <!-- /.row -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        Link statistics
-                    </div>
+                    <!-- Give the body of the panel all of the navs for swapping -->
                     <div class="panel-body">
-                        <canvas id="linkChart"></canvas>
+                        <div class="tab-content">
+
+                            <!-- Tab that holds the table of original links -->
+                            <div id="tabHome" class="tab-pane active" role="tabpanel">
+                                <div class="dataTable_wrapper">
+                                    <table class="table table-bordered table-striped table-hover responsive-utilities" id="linkTable" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Source</th>
+                                                <th>Src Port</th>
+                                                <th>Destination</th>
+                                                <th>Dst Port</th>
+                                                <th>Latency (ms)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="myButton">
+                                    <a id="viewLink" class="btn btn-default" href="#tabLink">View Link</a>
+                                </div>
+
+                            </div> <!-- End of Home tab -->
+
+                            <!-- Tab for the link statistics -->
+                            <div id="tabLink" class="tab-pane" role="tabpanel">
+                                <div class="row container-fluid vertical-align">
+                                    <div class="col-lg-9">
+                                        <canvas id="linkChart"></canvas>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <canvas id="flowChart"></canvas>
+                                    </div>
+                                </div>
+                            </div> <!-- End of Link tab -->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        Link Flow Usages
-                    </div>
-                    <div class="panel-body">
-                        <canvas id="flowChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </div> <!-- End of context switcher definition -->
     </div>
+
+    <!-- Modal declaration -->
+    <div id="statisticsModal" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Link Unknown</h3>
+                </div>
+                <div class="modal-body">
+                    <p>You must select a link to view from the table.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of modal declaration -->
+
+
     <!-- /#page-wrapper -->
     <div id="login-modal-include"></div>
 
@@ -189,104 +228,11 @@
 
 <!-- Custom scripts to load in HTML -->
 <script src="../js/navbar.js"></script>
+<script src="../js/statistics.js"></script>
 <script>
     $(function () {
         $("#login-modal-include").load("loginmodal.html");
     });
 </script>
-
-<script>
-    var ipaddress = $.cookie('cip');
-    if (ipaddress == null || ipaddress == "") window.location.href = "login.html";
-    var restport = $.cookie('cport');
-    if (restport == null || restport == "") window.location.href = "login.html";
-
-    $("#collectionChange").click(function () {
-        
-    });
-
-    function OpenStatistic() {
-        $.ajax({
-            type    : "PUT",
-            dataType: 'json',
-            url     : "http://" + ipaddress + ":" + restport + "/wm/statistics/config/enable/json",
-
-            success: function (data) {
-
-                new PNotify({
-                    title: 'Statistic Status Changed',
-                    text : 'Statistics are enabled.',
-                    type : 'success',
-                    hide : true
-                });
-
-            },
-            error  : function (jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + " " + jqXHR.responseText + " \n Status: " + textStatus + " \n Error Thrown: " + errorThrown);
-            }
-        });
-    }
-
-    function CloseStatistic() {
-        $.ajax({
-            type    : "PUT",
-            dataType: 'json',
-            url     : " http://" + ipaddress + ":" + restport + "/wm/statistics/config/disable/json",
-            success : function (data) {
-
-                new PNotify({
-                    title: 'Statistic Status Changed',
-                    text : 'Statistics are disabled.',
-                    type : 'success',
-                    hide : true
-                });
-            },
-            error   : function (jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + " " + jqXHR.responseText + " \n Status: " + textStatus + " \n Error Thrown: " + errorThrown);
-            }
-        });
-    }
-
-    var ctx = document.getElementById('linkChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ["14/02/18 11:01", "14/02/18 11:02", "14/02/18 11:03", "14/02/18 11:04", "14/02/18 11:05", "14/02/18 11:06", "14/02/18 11:07"],
-            datasets: [{
-                label: "00:00:00:00:00:01/00:00:00:00:00:02",
-                backgroundColor: 'rgb(255, 99, 132, 0.1)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [0, 10, 5, 2, 20, 30, 45],
-            },
-            {
-                label: "00:00:00:00:00:02/00:00:00:00:00:03",
-                backgroundColor: 'rgb(0, 99, 132, 0.1)',
-                borderColor: 'rgb(0, 99, 132)',
-                data: [5, 4, 10, 7, 11, 2, 1],
-            }]
-        }
-    });
-
-    var octx = document.getElementById('flowChart').getContext('2d');
-    var ochart = new Chart(octx, {
-        type: 'doughnut',
-        data: {
-                datasets: [{
-                    backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f"],
-                    data: [10, 2, 30]
-                }],
-
-                // These labels appear in the legend and in the tooltips when hovering different arcs
-                labels: [
-                    'ICMP',
-                    'UDP',
-                    'RTP'
-                ]
-        }
-    });
-
-</script>
-
 </body>
-
 </html>

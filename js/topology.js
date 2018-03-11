@@ -40,6 +40,9 @@ var DEFAULT_EDGE_WIDTH = 10;
 /* Constant for length of MAC in string form */
 var MAC_LEN = 17;
 
+/* Constant for the list of tables to subscribe to for the websocket */
+var WEBSOCKET_TABLES = ["PortStatistics"];
+
 /* Placeholder for the graph */
 var cyto = null;
 
@@ -72,109 +75,76 @@ $(document).ready(function() {
     promises.push(loadSwitches());
     promises.push(loadInternalLinks());
     promises.push(loadHosts());
+    promises.push(loadBlockedLinks());
 
     /* Wait for all to finish */
     Promise.all(promises).then(function() {
         /* Once we have all the data we can draw the graph */
         return draw();
 
-    }, function(err) {
+    }, function (err) {
         /* If there was an error log it to the console */
         console.log('Error loading the data: ', err);
 
-    }).then(loadBlockedLinks).then(function() {
+    }).then(function() {
         /* Start our web-socket connection */
-        /* TODO: Find way to get this without hard coding */
         var socket = new WebSocket("ws://localhost:8111/events/");
         socket.onmessage = onMessage;
+        socket.onopen = onOpen;
         top.socket = socket;
-
-        /* Send our subscription message */
     });
 });
 
-function reload() {
-    Promise.resolve(loadStatisticsData()).then(function () {
-        for (var i = 0; i < capacities.length; i++) {
-            var dpid = capacities[i]['dpid'];
-            var port = parseInt(capacities[i]['port']);
-            var cap = parseInt(capacities[i]['link-speed-bits-per-second']) * 1000;
-            var bw = parseInt(capacities[i]["bits-per-second-rx"]) + parseInt(capacities[i]["bits-per-second-tx"]);
-            var color = scaleColor(cap, bw);
-
-            if (capacities[i]['port'] == "local") {
-                continue;
-            }
-
-            if (bw > 10000) {
-                console.log("changing: " + color + ", " + dpid);
-            }
-
-            cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
-                style: {
-                    'line-color': color
-                }
-            }, {
-                duration: 5000,
-                complete: function() {
-                    console.log("Done");
-                }
-            });
-        }
-    }, function (err) {
-        console.log('Error:', err);
-    });
+/**
+ * Called when the web socket connection is established. Subscribes to the
+ * required tables on the controller.
+ *
+ * @param event Open event
+ */
+function onOpen(event) {
+    console.log("WebSocket opened. Subscribing to tables: " + WEBSOCKET_TABLES);
+    top.socket.send(JSON.stringify({"subscribe": WEBSOCKET_TABLES}));
 }
 
+/**
+ * Message handler function for the websocket. Only deals with port statistics
+ * messages currently because we only subscribe to that table.
+ *
+ * @param event Message event that contains the port statistics update
+ */
 function onMessage(event) {
-
-
-    if (event.data == "Connection established to websocket") {
-        top.socket.send(JSON.stringify({"subscribe": ["PortStatistics"]}));
-        console.log("connected to WS");
-        return;
-    }
-
-    var msg = event.data.split(", ");
-    /*
-    var msgJSON;
+    /* Try and parse the incoming message into JSON */
+    var msg;
     try {
-        msgJSON = JSON.parse(msg);
+        msg = JSON.parse(event.data);
     } catch (e) {
-        console.log(e);
-        return;{speedTX=0"
-1: "speedRX=0"
-2: "dpid=00:00:00:00:00:00:00:01"
-3: "portid=3"
-4: "currentSpeed=10000000}"
-    }*/
-
-    /* We can't do anything about local ports */
-    if (msg[3] == "portid=local") {
+        /* Log that we received un-parsable message */
+        console.log("Received un-parsable message from websocket: ", event);
         return;
     }
 
-    //var dpid = msgJSON.get('dpid');
-    var dpid = msg[2].split("=")[1];
-    //var port = parseInt(msgJSON.get('portid'));
-    var port = parseInt(msg[3].split("=")[1]);
-    //var cap = parseInt(msgJSON.get('currentSpeed')) * 1000;
-    //var cap = parseInt(msg[4].split("=")[1].replace("}", "")) * 1000;
-    var cap = 4000;
-    //var bw = parseInt(msgJSON.get('speedRX')) + parseInt(msgJSON.get('speedTX'));
-    var bw = parseInt(msg[0].split("=")[1]) + parseInt(msg[1].split("=")[1]);
-    var color = scaleColor(cap, bw);
-    console.log("color:", color);
+    /* Grab all of the fields from the message */
+    var dpid = msg.dpid;
+    var port = msg.portid;
+    //var cap = msg.currentSpeed * 1000;
+    var cap = 3000;
+    var bw = msg.speedRX + msg.speedTX;
+    var deleted = msg.deleted;
 
+    /* We can't do anything about local ports or deleted rows */
+    if (port == "local" || deleted == true) {
+        return;
+    }
+
+    /* Otherwise scale the color of the link and animate it on the graph */
+    var color = scaleColor(cap, bw);
     cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
         style: {
             'line-color': color
         }
     }, {
         duration: 1000,
-        complete: function() {
-            console.log("Done");
-        }
+        complete: function() {}
     });
 }
 
@@ -460,15 +430,20 @@ function loadBlockedLinks() {
 
         /* If we can get the data from the REST API */
         success: function (links) {
-            /* TODO I broke the shit outa this the REST call doesnt return anything anymore ffs */
-            console.log(links);
             /* Need to edit the links to show the block */
             for (var i = 0; i < links.length; i++) {
-                var id = links[i]["src-switch"] + "_" + links[i]["dst-switch"];
-                cyto.$("edge[id = '" + id + "']").data({
-                    blocked: true
+                edges.push({
+                    data: {
+                        id: links[i]["src-switch"] + "_" + links[i]["dst-switch"],
+                        source: links[i]["src-switch"],
+                        target: links[i]["dst-switch"],
+                        source_port: links[i]["src-port"],
+                        target_port: links[i]["dst-port"],
+                        blocked: true,
+                        blockable: true
+                    }
                 });
-             }
+            }
         }
     });
 }
