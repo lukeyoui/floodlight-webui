@@ -119,10 +119,10 @@ $(document).ready(function() {
                 });
 
                 /* Change the link color to the blocked color */
+                top.cyto.elements("edge[id = '" + src + "_" + dst + "']").data("blocked", true);
                 top.cyto.elements("edge[id = '" + src + "_" + dst + "']").animate({
                     style: {
-                        'line-color': '#444444',
-                        'opacity': 0.4
+                        'line-color': '#b2b2b2'
                     }
                 }, {
                     duration: 500,
@@ -161,10 +161,10 @@ $(document).ready(function() {
                 });
 
                 /* Change the link color to the blocked color */
+                top.cyto.elements("edge[id = '" + src + "_" + dst + "']").data("blocked", false);
                 top.cyto.elements("edge[id = '" + src + "_" + dst + "']").animate({
                     style: {
-                        'line-color': '#000000',
-                        'opacity': 0.8
+                        'line-color': '#000000'
                     }
                 }, {
                     duration: 500,
@@ -216,10 +216,10 @@ $(document).ready(function() {
         url: "http://" + ipaddress + ":" + restport + "/wm/core/switch/" + src + "/flow/json",
         dataType: "json",
         success: function(data) {
-            $("#linkPopupPacketCount").html(data.flows[0]["packet_count"]);
-            $("#linkPopupDataCount").html(formatSize(data.flows[0]["byte_count"]));
             $("#linkPopupEP1").html(src);
             $("#linkPopupEP2").html(dst);
+            $("#linkPopupPacketCount").html(data.flows[0]["packet_count"]);
+            $("#linkPopupDataCount").html(formatSize(data.flows[0]["byte_count"]));
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error: " + jqXHR.responseText + "\nStatus: " +

@@ -172,7 +172,6 @@ function onPortStatisticsMessage(msg) {
  * @param msg Flow statistics message from the web socket
  */
 function onFlowStatisticsMessage(msg) {
-    console.log(msg);
     /* LLDP flows have no identifiers so we can skip them */
     if (msg.port == null || msg.deleted == true) {
         return;
@@ -356,7 +355,6 @@ function loadLinks() {
                 searching: false,
                 lengthChange: false,
                 paging: false,
-                scrollY: true,
                 data: table_data,
                 columns: [
                     {data: 'src-switch'},

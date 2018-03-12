@@ -15,7 +15,7 @@ var SWITCH_BORDER_COLOR = "#510001";
 var HOST_BORDER_COLOR = "#08264B";
 var HOST_BG_COLOR = "#589DFE";
 var DEFAULT_EDGE_COLOR = "#000000";
-var BLOCKED_EDGE_COLOR = "#444444";
+var BLOCKED_EDGE_COLOR = "#b2b2b2";
 
 /* Constants for the background images */
 var SWITCH_BG_IMG = "../bower_components/Font-Awesome-SVG-PNG/black/png/128/random.png";
@@ -32,7 +32,7 @@ var MAX_EDGE_WEIGHT = 15;
 
 /* Constants for edge opacity */
 var DEFAULT_EDGE_OPACITY = 0.80;
-var BLOCKED_EDGE_OPACITY = 0.40;
+var BLOCKED_EDGE_OPACITY = 0.80;
 
 /* Constants for edge width */
 var DEFAULT_EDGE_WIDTH = 10;
@@ -127,7 +127,7 @@ function onMessage(event) {
     var dpid = msg.dpid;
     var port = msg.portid;
     //var cap = msg.currentSpeed * 1000;
-    var cap = 3000;
+    var cap = 4000;
     var bw = msg.speedRX + msg.speedTX;
     var deleted = msg.deleted;
 
@@ -138,6 +138,13 @@ function onMessage(event) {
 
     /* Otherwise scale the color of the link and animate it on the graph */
     var color = scaleColor(cap, bw);
+
+    /* First check if the link is blocked, if it is skip over it */
+    var blocked = cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").data("blocked");
+    if (blocked) {
+        return;
+    }
+
     cyto.elements("edge[source = '" + dpid + "'][source_port = " + port + "]").animate({
         style: {
             'line-color': color
