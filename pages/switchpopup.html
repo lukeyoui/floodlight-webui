@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- DataTables CSS -->
+    <link href="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
+          rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <!--<link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>-->
+    <!-- TODO: Find why this is needed -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
+
+    <style type="text/css">
+        .table-borderless > tbody > tr:first-child > td {
+            border: none;
+        }
+        .btn-group-no-scale {
+            width: 400px;
+        }
+
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Pop-up tabs for the switch -->
+    <ul id="switchPopupTabs" class="nav nav-tabs">
+        <li role="presentation" class="active"><a data-toggle="tab" href="#switchPopupInfo">Info</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupFlow">Flow Summary</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupTable">Flow Table</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#switchPopupOptions">Options</a></li>
+    </ul>
+
+    <!-- Tab declarations -->
+    <div class="tab-content">
+
+        <!-- Information tab declaration -->
+        <div id="switchPopupInfo" class="tab-pane fade in active">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-borderless table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>DPID</b></td>
+                                <td id="switchPopupDPID" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Version</b></td>
+                                <td id="switchPopupVersion" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Vendor</b></td>
+                                <td id="switchPopupVendor" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Hardware Info</b></td>
+                                <td id="switchPopupHWInfo" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of information tab declaration -->
+
+        <!-- Flow summary tab declaration -->
+        <div id="switchPopupFlow" class="tab-pane fade in">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-borderless table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>Flow Count</b></td>
+                                <td id="switchPopupFlowCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Packet Count</b></td>
+                                <td id="switchPopupPacketCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Data Count</b></td>
+                                <td id="switchPopupDataCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Buffer</b></td>
+                                <td id="switchPopupBuffer" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Table Count</b></td>
+                                <td id="switchPopupTableCount" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of flow summary tab declaration -->
+
+        <!-- Flow table tab declaration -->
+        <div id="switchPopupTable" class="tab-pane fade in">
+            <div class="container-fluid">
+                <div>
+                    <table id="switchPopupFlowTable" class="table table-bordered table-striped table-hover responsive-utilities" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>In Port</th>
+                                <th>Src MAC</th>
+                                <th>Dst MAC</th>
+                                <th>Priority</th>
+                                <th>Eth Type</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+
+                <!-- Visualize button that spans bottom of table -->
+                <div class="btn-group btn-group-justified">
+                    <a id="switchPopupVisualize" href="#" class="btn btn-default">Visualize</a>
+                    <a href="#" class="btn btn-default">View Flow Statistics</a>
+                </div>
+            </div>
+        </div> <!-- End of flow table tab declaration -->
+
+        <!-- Options tab declaration -->
+        <div id="switchPopupOptions" class="tab-pane fade in">
+            <div class="btn-group-vertical btn-block btn-group-no-scale">
+                <a href="#switchPopupWarning" class="btn btn-default" data-toggle="collapse">Enable/Disable Switch</a>
+                <div id="switchPopupWarning" class="panel-collapse collapse panel-danger">
+                    <div class="panel-heading">
+                        <i class="fa fa-warning"></i> Warning
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Performing this action could negatively affect the network.
+                            Are you sure you wish to continue?
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a href="#switchPopupWarning" class="btn btn-warning" data-toggle="collapse">Continue</a>
+                            <a href="#switchPopupWarning" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <a id="switchPopupFullInfo" href="#" class="btn btn-default">View Full Switch Information</a>
+            </div>
+        </div> <!-- End of options tab declaration -->
+
+    </div> <!-- End of tab declarations -->
+
+    <!-- Modal declaration -->
+    <div id="switchPopupModal" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Visualization Error</h3>
+                </div>
+                <div class="modal-body">
+                    <p>You must select a flow to visualize from the table.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of modal declaration -->
+
+    <!-- jQuery, uncomment if testing page by itself -->
+    <!-- Needs to be commented out or it overrides main page jQuery -->
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
+
+    <!-- Scripts for the Cookies and query parameters -->
+    <!--<script src="../js/querystringparser.js"></script>-->
+    <!--<script src="../js/jquery.cookie.js"></script>-->
+
+    <!-- Bootstrap Core JavaScript -->
+    <!--<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+
+    <!-- DataTables JavaScript -->
+    <!--<script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>-->
+    <!--<script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>-->
+
+    <!-- Scripts to laod the data for the pop-up -->
+    <!--<script src="../js/common.js"></script>-->
+    <script src="../js/switchpopup.js"></script>
+</body>
+</html>

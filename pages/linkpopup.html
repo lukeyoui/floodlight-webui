@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <style type="text/css">
+        .table > tbody > tr:first-child > td {
+            border: none;
+        }
+        .table td, .table th {
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <ul id="tabs" class="nav nav-tabs">
+        <li role="presentation" class="active"><a data-toggle="tab" href="#linkPopupStats">Stats</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#linkPopupEndpoints">Endpoints</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#linkPopupOptions">Options</a></li>
+    </ul>
+
+    <!-- Tab declarations -->
+    <div class="tab-content">
+
+        <!-- Stats tab declaration -->
+        <div id="linkPopupStats" class="tab-pane fade in active">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>Capacity</b></td>
+                                <td id="linkPopupCapacity" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Bandwidth</b></td>
+                                <td id="linkPopupBandwidth" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Latency (ms)</b></td>
+                                <td id="linkPopupLatency" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Packets</b></td>
+                                <td id="linkPopupPacketCount" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Data</b></td>
+                                <td id="linkPopupDataCount" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of stats tab declaration -->
+
+        <!-- Endpoints tab declaration -->
+        <div id="linkPopupEndpoints" class="tab-pane fade">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>Endpoint 1</b></td>
+                                <td id="linkPopupEP1" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Endpoint 2</b></td>
+                                <td id="linkPopupEP2" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- End of endpoint tab declaration -->
+
+        <!-- Options tab declaration -->
+        <div id="linkPopupOptions" class="tab-pane fade">
+            <div class="btn-group-vertical btn-block">
+
+                <!-- Add collapsable panel as warning against changing state -->
+                <a id="linkPopupBlockButton" href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Block/Unblock Link</a>
+                <div id="linkPopupWarning" class="panel-collapse collapse panel-danger">
+                    <div class="panel-heading">
+                        <i class="fa fa-warning"></i> Warning
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Performing this action could negatively affect the network.
+                            Blocking a link will disable all traffic across it.
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a id="linkPopupLinkBlock" href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Block</a>
+                            <a id="linkPopupLinkUnblock" href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Unblock</a>
+                            <a href="#linkPopupWarning" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add drop down to select statistics collection state -->
+                <a href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Statistics Collection</a>
+                <div id="linkPopupStatsDropdown" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <p>
+                            Should the controller collect statistics on links?
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <a id="linkPopupStatsEnable" href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Enable</a>
+                            <a id="linkPopupStatsDisable" href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Disable</a>
+                            <a href="#linkPopupStatsDropdown" class="btn btn-default" data-toggle="collapse">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-default">View Full Link Information</a>
+            </div> <!-- End of button group -->
+        </div> <!-- End of options tab declaration -->
+    </div> <!-- End of tab declarations -->
+
+    <!-- jQuery, uncomment if testing page by itself -->
+    <!-- Needs to be commented out or it overrides main page jQuery -->
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
+
+    <!-- Bootstrap Core JavaScript -->
+    <!--<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+
+    <!-- Scripts for the Cookies and query parameters -->
+    <!--<script src="../js/querystringparser.js"></script>-->
+    <!--<script src="../js/jquery.cookie.js"></script>-->
+
+    <!-- Custom scripts -->
+    <!--<script src="../js/common.js"></script>-->
+    <script src="../js/linkpopup.js"></script>
+</body>
+</html>

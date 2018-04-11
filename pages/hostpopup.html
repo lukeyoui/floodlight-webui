@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- Bootstrap switches -->
+    <link href="../bower_components/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet"/>
+
+    <!-- Custom Fonts -->
+    <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+    <style type="text/css">
+        .table-borderless > tbody > tr:first-child > td {
+            border: none;
+        }
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Pop-up tabs for the Host -->
+    <ul id="hostPopupTabs" class="nav nav-tabs">
+        <li role="presentation" class="active"><a data-toggle="tab" href="#hostPopupInfo">Info</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#hostPopupLinks">Links</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#hostPopupOptions">Options</a></li>
+    </ul>
+
+    <!-- Tab declarations -->
+    <div class="tab-content">
+
+        <!-- Information tab declaration -->
+        <div id="hostPopupInfo" class="tab-pane fade in active">
+            <div class="container-fluid">
+                <div class="row">
+                    <table class="table table-borderless table-hover">
+                        <tbody>
+                            <tr>
+                                <td><b>IP</b></td>
+                                <td id="hostPopupIP" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>MAC</b></td>
+                                <td id="hostPopupMAC" class="text-right">Unknown</td>
+                            </tr>
+                            <tr>
+                                <td><b>Last Seen</b></td>
+                                <td id="hostPopupLastSeen" class="text-right">Unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Link tab declaration -->
+        <div id="hostPopupLinks" class="tab-pane fade">
+            <table id="hostPopupLinksTable" class='table table-bordered table-striped table-hover responsive-utilities'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Switch</th>
+                        <th>Port</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <!-- Options tab declaration -->
+        <div id="hostPopupOptions" class="tab-pane fade">
+            <div class="btn-group-vertical btn-block">
+                <a href="hosts.html" class="btn btn-default">View Full Host Information</a>
+            </div>
+        </div>
+
+    </div> <!-- End of tab declarations -->
+
+    <!-- jQuery, uncomment if testing page by itself -->
+    <!-- Needs to be commented out or it overrides main page jQuery -->
+    <!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
+
+    <!-- Bootstrap Core JavaScript -->
+    <!--<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+
+    <!-- Bootstrap switches javascript -->
+    <!--<script src="../bower_components/bootstrap-switch/dist/js/bootstrap-switch.min.js"></script>-->
+
+    <!-- Scripts for the Cookies and query parameters -->
+    <!--<script src="../js/querystringparser.js"></script>-->
+    <!--<script src="../js/jquery.cookie.js"></script>-->
+
+    <!-- DataTables JavaScript -->
+    <!--<script src="../bower_components/datatables/media/js/jquery.dataTables.min.js"></script>-->
+    <!--<script src="../bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>-->
+
+    <!-- Scripts to laod the data for the pop-up -->
+    <!--<script src="../js/common.js"></script>-->
+    <script src="../js/hostpopup.js"></script>
+</body>
+</html>
